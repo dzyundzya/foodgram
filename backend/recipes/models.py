@@ -16,7 +16,7 @@ class Recipe(models.Model):
     )
     title = models.CharField(
         'Название рецепта',
-        max_length=constants.MAX_LENGTH_TITLE,
+        max_length=constants.MAX_LENGTH_TITLE_AND_SLUG,
     )
     image = models.ImageField(
         'Картинка рецепта',
@@ -38,7 +38,7 @@ class Ingredient(models.Model):
     
     title = models.CharField(
         'Название инргедиента',
-        max_length=constants.MAX_LENGTH_TITLE,
+        max_length=constants.MAX_LENGTH_TITLE_AND_SLUG,
     )
     units_of_measurement = models.CharField(
         'Единицы измерения',
@@ -47,4 +47,9 @@ class Ingredient(models.Model):
 
 
 class Tag(models.Model):
-    pass
+
+    title = models.CharField(
+        'Название тега',
+        max_length=constants.MAX_LENGTH_TITLE_AND_SLUG,
+    )
+    slug = models.SlugField(max_length=constants.MAX_LENGTH_TITLE_AND_SLUG)
