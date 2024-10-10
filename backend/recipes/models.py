@@ -34,7 +34,6 @@ class Recipe(models.Model):
     cooking_time = models.DurationField('Время приготовления')
 
     class Meta:
-
         verbose_name = 'Рецепт'
         verbose_name_plural = 'Рецепты'
 
@@ -54,7 +53,6 @@ class Ingredient(models.Model):
     )
 
     class Meta:
-
         verbose_name = 'Ингредиент'
         verbose_name_plural = 'Ингредиенты'
 
@@ -76,7 +74,6 @@ class Tag(models.Model):
     )
 
     class Meta:
-
         verbose_name = 'Тег'
         verbose_name_plural = 'Теги'
 
