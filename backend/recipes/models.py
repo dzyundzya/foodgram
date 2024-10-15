@@ -18,7 +18,7 @@ class Recipe(models.Model):
     name = models.CharField(
         'Название рецепта',
         max_length=constants.MAX_LENGTH_NAME_AND_SLUG,
-        help_text='Название рецепта, не более 256 символов'
+        help_text=constants.HELP_TEXT_NAME,
     )
     image = models.ImageField(
         'Картинка рецепта',
@@ -37,7 +37,7 @@ class Recipe(models.Model):
     )
     cooking_time = models.DurationField(
         'Время приготовления',
-        help_text='Время приготовления в секундах',
+        help_text=constants.HELP_TEXT_COOKING_TIME,
     )
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -59,7 +59,7 @@ class Ingredient(models.Model):
     measurement_unit = models.CharField(
         'Единица измерения ингредиента',
         max_length=constants.UNITS_OF_MEASUREMENT,
-        help_text='Пример: гр, мл, и т.п.'
+        help_text=constants.HELP_TEXT_UNIT,
     )
 
     class Meta:
@@ -81,8 +81,7 @@ class Tag(models.Model):
         'Слаг тега',
         max_length=constants.MAX_LENGTH_NAME_AND_SLUG,
         unique=True,
-        help_text='Используйте только латинские буквы в нижнем регистре,'
-        ' цифры, дефисы и подчеркивания'
+        help_text=constants.HELP_TEXT_SLUG,
     )
 
     class Meta:
