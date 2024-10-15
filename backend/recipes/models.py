@@ -13,10 +13,12 @@ class Recipe(models.Model):
         User,
         on_delete=models.CASCADE,
         related_name='recipes',
+        verbose_name='Автор рецепта',
     )
     name = models.CharField(
         'Название рецепта',
         max_length=constants.MAX_LENGTH_NAME_AND_SLUG,
+        help_text='Название рецепта, не более 256 символов'
     )
     image = models.ImageField(
         'Картинка рецепта',
@@ -26,16 +28,21 @@ class Recipe(models.Model):
     ingredients = models.ManyToManyField(
         'Ingredient',
         related_name='recipes',
+        verbose_name='Ингредиенты рецепта',
     )
     tags = models.ManyToManyField(
         'Tag',
         related_name='recipes',
+        verbose_name='Теги рецепта',
     )
-    cooking_time = models.DurationField('Время приготовления')
+    cooking_time = models.DurationField(
+        'Время приготовления',
+        help_text='Время приготовления в секундах',
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        verbose_name = 'Рецепт'
+        verbose_name = 'рецепт'
         verbose_name_plural = 'Рецепты'
         ordering = ('created_at',)
 
@@ -50,12 +57,13 @@ class Ingredient(models.Model):
         max_length=constants.MAX_LENGTH_NAME_AND_SLUG,
     )
     measurement_unit = models.CharField(
-        'Единицы измерения',
+        'Единица измерения ингредиента',
         max_length=constants.UNITS_OF_MEASUREMENT,
+        help_text='Пример: гр, мл, и т.п.'
     )
 
     class Meta:
-        verbose_name = 'Ингредиент'
+        verbose_name = 'ингредиент'
         verbose_name_plural = 'Ингредиенты'
 
     def __str__(self):
@@ -73,10 +81,12 @@ class Tag(models.Model):
         'Слаг тега',
         max_length=constants.MAX_LENGTH_NAME_AND_SLUG,
         unique=True,
+        help_text='Используйте только латинские буквы в нижнем регистре,'
+        ' цифры, дефисы и подчеркивания'
     )
 
     class Meta:
-        verbose_name = 'Тег'
+        verbose_name = 'тег'
         verbose_name_plural = 'Теги'
 
     def __str__(self):

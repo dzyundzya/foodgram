@@ -11,7 +11,7 @@ class IngredientAdmin(admin.ModelAdmin):
     list_filter = (
         'name',
     )
-
+    
 
 class RecipeAdmin(admin.ModelAdmin):
     list_display = (
@@ -21,6 +21,10 @@ class RecipeAdmin(admin.ModelAdmin):
     list_filter = (
         'name',
         'author',
+        'tags',
+    )
+    filter_horizontal = (
+        'ingredients',
         'tags',
     )
 
