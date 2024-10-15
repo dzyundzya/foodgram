@@ -32,6 +32,7 @@ class Recipe(models.Model):
         related_name='recipes',
     )
     cooking_time = models.DurationField('Время приготовления')
+    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         verbose_name = 'Рецепт'
