@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.core.validators import MinValueValidator
 from django.db import models
 
 from recipes import constants
@@ -17,7 +18,7 @@ class Recipe(models.Model):
     )
     name = models.CharField(
         'Название рецепта',
-        max_length=constants.MAX_LENGTH_NAME_AND_SLUG,
+        max_length=constants.MAX_LENGTH_RECIPE_NAME,
         help_text=constants.HELP_TEXT_NAME,
     )
     image = models.ImageField(
@@ -35,8 +36,9 @@ class Recipe(models.Model):
         related_name='recipes',
         verbose_name='Теги рецепта',
     )
-    cooking_time = models.DurationField(
+    cooking_time = models.PositiveSmallIntegerField(
         'Время приготовления',
+        validators=(MinValueValidator(1, message='Минимум одна!'),),
         help_text=constants.HELP_TEXT_COOKING_TIME,
     )
     created_at = models.DateTimeField(auto_now_add=True)
@@ -54,7 +56,7 @@ class Ingredient(models.Model):
 
     name = models.CharField(
         'Название инргедиента',
-        max_length=constants.MAX_LENGTH_NAME_AND_SLUG,
+        max_length=constants.MAX_LENGTH_INGREDIENT_NAME,
     )
     measurement_unit = models.CharField(
         'Единица измерения ингредиента',
@@ -65,21 +67,29 @@ class Ingredient(models.Model):
     class Meta:
         verbose_name = 'ингредиент'
         verbose_name_plural = 'Ингредиенты'
+        ordering = ('name',)
+        constraints = [
+            models.UniqueConstraint(
+                fields=['name', 'measurement_unit'],
+                name='unique_name_measurement_unit'
+            )
+        ]
 
     def __str__(self):
-        return self.name
+        return f'{self.name} {self.measurement_unit}'
 
 
 class Tag(models.Model):
 
     name = models.CharField(
         'Название тега',
-        max_length=constants.MAX_LENGTH_NAME_AND_SLUG,
+        max_length=constants.MAX_LENGTH_TAG,
         unique=True,
+        help_text=constants.HELP_TEXT_TAG,
     )
     slug = models.SlugField(
         'Слаг тега',
-        max_length=constants.MAX_LENGTH_NAME_AND_SLUG,
+        max_length=constants.MAX_LENGTH_TAG,
         unique=True,
         help_text=constants.HELP_TEXT_SLUG,
     )
@@ -87,6 +97,45 @@ class Tag(models.Model):
     class Meta:
         verbose_name = 'тег'
         verbose_name_plural = 'Теги'
+        ordering = ('name',)
+        constraints = [
+            models.UniqueConstraint(
+                fields=['name', 'slug'],
+                name='unique_name_slug'
+            )
+        ]
 
     def __str__(self):
         return self.name
+
+
+class IngredientInRecipe(models.Model):
+
+    recipe = models.ForeignKey(
+        Recipe,
+        on_delete=models.CASCADE,
+        related_name='ingredient',
+        verbose_name='Рецепт'
+    )
+    ingredient = models.ForeignKey(
+        Ingredient,
+        on_delete=models.CASCADE,
+        verbose_name='Ингредиент',
+    )
+    amount = models.PositiveSmallIntegerField(
+        'Количество',
+        validators=(MinValueValidator(1, message='Минимум один!'),),
+    )
+
+    class Meta:
+        verbose_name = 'ингредиент в рецепте'
+        verbose_name_plural = 'Ингредиенты в рецепте'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['recipe', 'ingredient'],
+                name='unique_recipe_ingredient'
+            )
+        ]
+
+    def __str__(self):
+        return f'{self.amount} {self.ingredient}'
