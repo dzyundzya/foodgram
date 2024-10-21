@@ -1,11 +1,11 @@
 from rest_framework import  viewsets
 
 from .permission import AdminOrReadOnly, AuthorOrAdminOrReadOnly
-from .serializers import IngredientSerializer, RecipeSerializer, TagSerializer
+from .serializers import  BriefRecipeSerializer, FullRecipeSerializer, IngredientSerializer, TagSerializer
 from recipes.models import Ingredient, Recipe, Tag, User
 
 
-class IngredientViewSet(viewsets.ModelViewSet):
+class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
 
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
@@ -15,8 +15,12 @@ class IngredientViewSet(viewsets.ModelViewSet):
 class RecipeViewSet(viewsets.ModelViewSet):
 
     queryset = Recipe.objects.all()
-    serializer_class = RecipeSerializer
     permission_classes = (AuthorOrAdminOrReadOnly,)
+
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return BriefRecipeSerializer
+        return FullRecipeSerializer
 
 
 class TagViewSet(viewsets.ModelViewSet):
@@ -24,3 +28,4 @@ class TagViewSet(viewsets.ModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
     permission_classes = (AdminOrReadOnly,)
+
