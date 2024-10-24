@@ -7,7 +7,7 @@ from users import constants
 class User(AbstractUser):
 
     username = models.CharField(
-        'Имя пользователя',
+        'Никнейм',
         max_length=constants.MAX_LENGTH_NAME,
         unique=True,
         help_text=constants.HELP_TEXT_NAME,
@@ -33,6 +33,19 @@ class User(AbstractUser):
         max_length=constants.MAX_LENGTH_PASSWORD,
         help_text=constants.HELP_TEXT_PASSWORD,
     )
+    avatar = models.ImageField(
+        'Аватар пользователя',
+        upload_to='images_avatar/',
+        blank=True,
+        null=True,
+    )
+
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = [
+        'username',
+        'first_name',
+        'last_name'
+    ]
 
     class Meta:
         verbose_name = 'Пользователь'
@@ -49,28 +62,24 @@ class Subscribe(models.Model):
         User,
         on_delete=models.CASCADE,
         related_name='following',
-        verbose_name='Автор'
+        verbose_name='Автор',
     )
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
         related_name='follower',
-        verbose_name='Подписчик'
+        verbose_name='Подписчик',
     )
 
     class Meta:
         verbose_name = 'подписка'
         verbose_name_plural = 'Подписки'
-        constraints = [ 
+        constraints = [
             models.UniqueConstraint(
                 fields=['author', 'user'],
                 name='unique_user_following'
             ),
-            models.CheckConstraint(
-                check=~models.Q(user=models.Q('fallowing')),
-                name='cant_subscribe_to_yourself'
-            )
         ]
 
     def __str__(self) -> str:
-        return f'{self.user.username}, подписался на {self.author.username}'
+        return f'{self.user}, подписался на {self.author}'

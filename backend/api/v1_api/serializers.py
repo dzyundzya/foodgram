@@ -17,18 +17,21 @@ class Base64ImageField(serializers.ImageField):
         return super().to_internal_value(data)
 
 
-class CustomUserSerializer(UserSerializer):
+class DjoserUserSerializer(UserSerializer):
+
+    # is_subscribed 
 
     class Meta:
         model = User
         fields = (
-            'email',
             'id',
+            'email',
             'username',
             'first_name',
             'last_name',
-            # is_subscribed,
-            # avatar
+            'password',
+            # 'is_subscribed',
+            'avatar',
         )
 
 
@@ -51,7 +54,7 @@ class IngredientSerializer(serializers.ModelSerializer):
 
 class FullRecipeSerializer(serializers.ModelSerializer):
 
-    author = CustomUserSerializer(read_only=True)
+    author = DjoserUserSerializer(read_only=True)
     image = Base64ImageField()
     ingredients = IngredientInRecipesSerializer(
         source='ingredient_recipes', many=True
@@ -74,6 +77,16 @@ class BriefRecipeSerializer(serializers.ModelSerializer):
 
 class TagSerializer(serializers.ModelSerializer):
 
+
     class Meta:
         model = Tag
         fields = ('id', 'name', 'slug')
+
+
+class AvatarSerializer(serializers.ModelSerializer):
+
+    avatar = Base64ImageField()
+
+    class Meta:
+        model = User
+        fields = ('avatar',)
