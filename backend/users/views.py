@@ -4,8 +4,9 @@ from rest_framework import status, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from api.v1_api.serializers import AvatarSerializer, DjoserUserSerializer
+from api.v1_api.serializers import AvatarSerializer, DjoserUserSerializer, SubscriberSerializer
 from api.v1_api.permission import AuthorOrAdminOrReadOnly
+from users.models import Subscribe
 
 
 User = get_user_model()
@@ -16,7 +17,10 @@ class DjoserUserViewSet(UserViewSet):
     serializer_class = DjoserUserSerializer
     permission_classes = (AuthorOrAdminOrReadOnly,)
 
-    @action(detail=False, permission_classes=[permissions.IsAuthenticated])
+    @action(
+        detail=False, 
+        permission_classes=[permissions.IsAuthenticated]
+    )
     def me(self, request):
         serializer = DjoserUserSerializer(self.request.user)
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -38,7 +42,35 @@ class DjoserUserViewSet(UserViewSet):
             user.avatar.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         return Response(status=status.HTTP_400_BAD_REQUEST)
-            
+    
+    @action(
+        methods=['POST', 'DELETE'],
+        detail=True,
+        permission_classes=[permissions.IsAuthenticated],
+    )
+    def subscribe(self, request, id):
+        if request.method == 'POST':
+            queryset = Subscribe.objects.create(
+                author=User.objects.get(id=id),
+                user=request.user
+            )
+            serializer = SubscriberSerializer(
+                queryset,
+                context={'request': request}
+            )
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        if request.method == 'DELETE':
+            subscibe = Subscribe.objects.get(
+                author=User.objects.get(id=id),
+                user=request.user
+            )
+            subscibe.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
 
-
+    # @action(
+    #     detail=False,
+    #     permission_classes=[permissions.IsAuthenticated],
+    # )
+    # def subscriptions(self, request):
 

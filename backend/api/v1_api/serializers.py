@@ -5,6 +5,7 @@ from djoser.serializers import UserSerializer
 from rest_framework import serializers
 
 from recipes.models import Favorite, Ingredient, IngredientInRecipe, Recipe, ShoppingCart, Tag, User
+from users.models import Subscribe
 
 
 class Base64ImageField(serializers.ImageField):
@@ -90,3 +91,10 @@ class AvatarSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('avatar',)
+
+
+class SubscriberSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Subscribe
+        fields = ('id', 'author', 'user')
