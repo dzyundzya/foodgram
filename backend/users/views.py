@@ -4,12 +4,13 @@ from rest_framework import status, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from api.v1_api.serializers import AvatarSerializer, DjoserUserSerializer, SubscriberSerializer
+from api.v1_api.serializers import AvatarSerializer, DjoserUserSerializer, SubscriberSerializer, SubscriptionsSerializer
 from api.v1_api.permission import AuthorOrAdminOrReadOnly
 from users.models import Subscribe
 
 
 User = get_user_model()
+
 
 class DjoserUserViewSet(UserViewSet):
 
@@ -18,13 +19,13 @@ class DjoserUserViewSet(UserViewSet):
     permission_classes = (AuthorOrAdminOrReadOnly,)
 
     @action(
-        detail=False, 
+        detail=False,
         permission_classes=[permissions.IsAuthenticated]
     )
     def me(self, request):
         serializer = DjoserUserSerializer(self.request.user)
         return Response(serializer.data, status=status.HTTP_200_OK)
-    
+
     @action(
         methods=['PUT', 'DELETE'],
         detail=False,
@@ -68,9 +69,16 @@ class DjoserUserViewSet(UserViewSet):
             return Response(status=status.HTTP_204_NO_CONTENT)
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
-    # @action(
-    #     detail=False,
-    #     permission_classes=[permissions.IsAuthenticated],
-    # )
-    # def subscriptions(self, request):
+    @action(
+        detail=False,
+        permission_classes=[permissions.IsAuthenticated],
+    )
+    def subscriptions(self, request):
+        user = request.user
+        quaryset = user.follower.all()
+        serializer = SubscriptionsSerializer(
+            self.paginate_queryset(quaryset),
+            many=True,
+        )
+        return self.get_paginated_response(serializer.data)
 

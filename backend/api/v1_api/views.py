@@ -1,7 +1,7 @@
 from rest_framework import  viewsets
 
 from .permission import AdminOrReadOnly, AuthorOrAdminOrReadOnly
-from .serializers import  BriefRecipeSerializer, FullRecipeSerializer, IngredientSerializer, TagSerializer
+from .serializers import  BriefRecipeSerializer, CreateRecipesSerializer, FullRecipeSerializer, IngredientSerializer, TagSerializer
 from recipes.models import Ingredient, Recipe, Tag, User
 
 
@@ -18,9 +18,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
     permission_classes = (AuthorOrAdminOrReadOnly,)
 
     def get_serializer_class(self):
-        if self.action == 'list':
-            return BriefRecipeSerializer
-        return FullRecipeSerializer
+        if self.action == 'list' or 'retrieve':
+            return FullRecipeSerializer
+        return CreateRecipesSerializer
 
 
 class TagViewSet(viewsets.ModelViewSet):
