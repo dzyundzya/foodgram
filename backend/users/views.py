@@ -81,4 +81,3 @@ class DjoserUserViewSet(UserViewSet):
             many=True,
         )
         return self.get_paginated_response(serializer.data)
-

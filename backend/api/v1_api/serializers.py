@@ -58,10 +58,15 @@ class IngredientInRecipesSerializer(serializers.ModelSerializer):
     name = serializers.SlugRelatedField(
         'name', source='ingredient', queryset=Ingredient.objects.all()
     )
+    measurement_unit = serializers.SlugRelatedField(
+        'measurement_unit',
+        source='ingredient',
+        queryset=Ingredient.objects.all()
+    )
 
     class Meta:
         model = IngredientInRecipe
-        fields = ('name', 'amount')
+        fields = ('id', 'name', 'measurement_unit', 'amount')
 
 class IngredientSerializer(serializers.ModelSerializer):
 
