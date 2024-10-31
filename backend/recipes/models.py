@@ -4,7 +4,6 @@ from django.db import models
 
 from recipes import constants
 
-
 User = get_user_model()
 
 
@@ -170,7 +169,7 @@ class ShoppingCart(models.Model):
 
     def __str__(self):
         return f'Рецепт - {self.recipe.name}, добавлен в корзину'
-    
+
 
 class Favorite(models.Model):
 
