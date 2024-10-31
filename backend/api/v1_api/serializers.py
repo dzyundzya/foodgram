@@ -4,12 +4,11 @@ from django.core.files.base import ContentFile
 from djoser.serializers import UserSerializer
 from rest_framework import serializers
 
-from recipes.models import Favorite, Ingredient, IngredientInRecipe, Recipe, ShoppingCart, Tag, User
+from recipes.models import Ingredient, IngredientInRecipe, Recipe, Tag, User
 from users.models import Subscribe
 
 
 class TagSerializer(serializers.ModelSerializer):
-
 
     class Meta:
         model = Tag
@@ -24,7 +23,7 @@ class Base64ImageField(serializers.ImageField):
             ext = format.split('/')[-1]
             data = ContentFile(base64.b64decode(imgstr), name='temp.' + ext)
         return super().to_internal_value(data)
-    
+
 
 class DjoserUserSerializer(UserSerializer):
 
@@ -52,7 +51,6 @@ class DjoserUserSerializer(UserSerializer):
         return False
 
 
-
 class IngredientInRecipesSerializer(serializers.ModelSerializer):
 
     name = serializers.SlugRelatedField(
@@ -67,6 +65,7 @@ class IngredientInRecipesSerializer(serializers.ModelSerializer):
     class Meta:
         model = IngredientInRecipe
         fields = ('id', 'name', 'measurement_unit', 'amount')
+
 
 class IngredientSerializer(serializers.ModelSerializer):
 
@@ -204,7 +203,6 @@ class SubscriptionsSerializer(serializers.ModelSerializer):
     recipes = serializers.SerializerMethodField()
     recipes_count = serializers.SerializerMethodField()
     avatar = Base64ImageField(source='author.avatar')
-
 
     class Meta:
         model = Subscribe
