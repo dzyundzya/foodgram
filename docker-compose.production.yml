@@ -17,6 +17,8 @@ services:
     volumes:
       - static:/backend_static
       - media:/app/media
+    depends_on:
+      - db
   frontend:
     image: dzyundzya/foodgram_frontend
     command: cp -r /app/build/. /frontend_static/
@@ -26,7 +28,9 @@ services:
     image: dzyundzya/foodgram_gateway
     env_file: .env
     ports:
-      - 8080:80
+      - 8090:80
     volumes:
       - static:/static/
       - media:/app/media
+    depends_on:
+      - frontend
