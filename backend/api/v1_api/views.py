@@ -3,11 +3,11 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from .permission import AdminOrReadOnly, AuthorOrAdminOrReadOnly
+from recipes.models import Favorite, Ingredient, Recipe, ShoppingCart, Tag
 from .serializers import (
     BriefRecipeSerializer, CreateRecipesSerializer,
     FullRecipeSerializer, IngredientSerializer, TagSerializer
 )
-from recipes.models import Favorite, Ingredient, Recipe, ShoppingCart, Tag
 
 
 class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
@@ -26,7 +26,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         if self.action == 'list' or 'retrieve' or 'get-link':
             return FullRecipeSerializer
         return CreateRecipesSerializer
-    
+
     @action(
         methods=['POST', 'DELETE'],
         detail=True,
