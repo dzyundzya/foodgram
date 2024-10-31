@@ -1,0 +1,4 @@
+venv 
+.git
+foodgram_db.sqlite3
+__pycache__

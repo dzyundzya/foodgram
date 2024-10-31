@@ -3,8 +3,11 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from .permission import AdminOrReadOnly, AuthorOrAdminOrReadOnly
-from .serializers import  BriefRecipeSerializer, CreateRecipesSerializer, FullRecipeSerializer, IngredientSerializer, TagSerializer
-from recipes.models import Favorite, Ingredient, Recipe, ShoppingCart, Tag, User
+from .serializers import (
+    BriefRecipeSerializer, CreateRecipesSerializer,
+    FullRecipeSerializer, IngredientSerializer, TagSerializer
+)
+from recipes.models import Favorite, Ingredient, Recipe, ShoppingCart, Tag
 
 
 class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
@@ -20,7 +23,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     permission_classes = (AuthorOrAdminOrReadOnly,)
 
     def get_serializer_class(self):
-        if self.action == 'list' or 'retrieve':
+        if self.action == 'list' or 'retrieve' or 'get-link':
             return FullRecipeSerializer
         return CreateRecipesSerializer
     

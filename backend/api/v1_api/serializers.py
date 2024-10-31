@@ -133,27 +133,39 @@ class CreateRecipesSerializer(serializers.ModelSerializer):
             'cooking_time',
         )
 
-    def create_tags(self, tags, recipe):
-        recipe.tags.set(tags)
-
-    def create_ingredients(self, ingtedients, recipe):
-        for ingredient in ingtedients:
-            ingredient_id = ingredient['id']
-            ingredient = Ingredient.objects.get(id=ingredient_id)
-            amount = ingredient['amount']
+    def create(self, validate_data):
+        ingredients = validate_data.pop('ingredients')
+        tags = validate_data.pop('tags')
+        recipe = Recipe.objects.create(**validate_data)
+        for ingredient in ingredients:
             IngredientInRecipe.objects.create(
-                recipe=recipe, ingredient=ingredient, amount=amount
+                recipe=recipe,
+                ingredient=ingredient['id'],
+                amount=ingredient['amount'],
             )
-
-    def create(self, validated_data):
-        request = self.context.get('request')
-        ingredients = validated_data.pop('ingredients')
-        tags = validated_data.pop('tags')
-        recipe = Recipe.objects.create(**validated_data, author=request.user)
-        self.create_tags(tags, recipe)
-        self.create_ingredients(ingredients, recipe)
+        recipe.tags.set(tags)
         return recipe
 
+    def update(self, instance, validated_data):
+        if 'ingredients' != validated_data:
+            raise serializers.ValidationError('Добавьте ингредиент')
+        if 'tags' != validated_data:
+            raise serializers.ValidationError('Добавьте тег')
+        ingredients = validated_data.pop('ingredients', None)
+        tags = validated_data.pop('tags', None)
+        instance = super().update(instance, validated_data)
+        if ingredients is not None:
+            instance.ingredients.clear()
+            for ingredient in ingredients:
+                IngredientInRecipe.objects.create(
+                    recipe=instance,
+                    ingredient=ingredient['id'],
+                    amount=ingredient['amount'],
+                )
+        if tags is not None:
+            instance.tags.set(tags)
+        instance.save()
+        return instance
 
 
 class BriefRecipeSerializer(serializers.ModelSerializer):

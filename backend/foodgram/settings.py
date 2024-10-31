@@ -1,15 +1,19 @@
 import os
 from pathlib import Path
 
+from dotenv import load_dotenv
+
+
+load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-SECRET_KEY = 'django-insecure-z2pp9p7ju++j@#icj91cpwc%bb&=xgd)@l0*p%73cz95^fap6e'
+SECRET_KEY = os.getenv('SECRET_KEY', default='DEFAULT_KEY')
 
-DEBUG = True
+DEBUG = os.getenv('DEBUG', 'False') != 'False'
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS', '127.0.0.1, localhost').split(', ')
 
 
 INSTALLED_APPS = [
@@ -20,19 +24,18 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    # 'corsheaders',
     'rest_framework.authtoken',
     'api.apps.ApiConfig',
     'users.apps.UsersConfig',
     'recipes.apps.RecipesConfig',
     'debug_toolbar',
     'djoser',
+    'shortener',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    # 'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -69,8 +72,12 @@ WSGI_APPLICATION = 'foodgram.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'foodgram_db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.getenv('POSTGRES_DB', 'project18'),
+        'USER': os.getenv('POSTGRES_USER', 'project18'),
+        'PASSWORD': os.getenv('POSTGRES_PASSWORD', ''),
+        'HOST': os.getenv('DB_HOST', ''),
+        'PORT': os.getenv('DB_PORT', 5432)
     }
 }
 
@@ -134,10 +141,3 @@ REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 6,
 }
-
-
-# CORS_URLS_REGEX = r'^/api/.*$' 
-
-# CORS_ALLOWED_ORIGINS = [
-#     'http://localhost:3000',
-# ]
