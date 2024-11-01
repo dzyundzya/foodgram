@@ -127,7 +127,6 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
           script: |
-            sudo docker system prune -af
             npm cache clean --force
             sudo apt clean
             sudo journalctl --vacuum-time=1d  
