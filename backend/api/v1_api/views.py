@@ -23,7 +23,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     permission_classes = (AuthorOrAdminOrReadOnly,)
 
     def get_serializer_class(self):
-        if self.action == 'list' or 'retrieve' or 'get-link':
+        if self.action in ('list', 'retrieve', 'get-link'):
             return FullRecipeSerializer
         return CreateRecipesSerializer
 
