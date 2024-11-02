@@ -96,38 +96,31 @@ class RecipeViewSet(viewsets.ModelViewSet):
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
     @staticmethod
-    def create_shopping_cart(user):
-        shopping_cart = [
-            'Список покупок:'
-        ]
-        ingredients = (
-            IngredientInRecipe.objects.filter(
-                recipe__recipe__shopping_cart__user=user
-            ).values('name', unit=F('measurement_unit')
-                     ).annotate(amount=Sum('recipe__amount'))
-        )
-        ingredients_list = [
-            f'{ingr["name"]}: {ingr["amount"]} {ingr["unit"]}'
-            for ingr in ingredients
-        ]
-        shopping_cart.extend(ingredients_list)
-        return "\n".join(shopping_cart)
-
-    @action(
-        detail=False,
-        permission_classes=[permissions.IsAuthenticated]
-    )
-    def download_shopping_cart(self, request):
-        user = request.user
-        if not user.shopping_cart.exists():
-            return Response(status=status.HTTP_400_BAD_REQUEST)
-        filename = f'{user.username}_shopping_cart.txt'
-        shopping_cart = self.create_shopping_cart(user)
+    def create_shopping_cart(ingredients):
+        shopping_cart = 'Список покупок:'
+        filename = 'shopping_cart.txt'
+        for ingredient in ingredients:
+            shopping_cart += (
+                f'\n{ingredient["ingredient__name"]} '
+                f'({ingredient["ingredient__measurement_unit"]}) - '
+                f'{ingredient["amount"]}'
+            )
         response = HttpResponse(
             shopping_cart, content_type='text.txt; charset=utf-8'
         )
         response['Content-Desposition'] = f'attachment; filename={filename}'
         return response
+    @action(
+        detail=False,
+        permission_classes=[permissions.IsAuthenticated]
+    )
+    def download_shopping_cart(self, request):
+        ingredients = IngredientInRecipe.objects.filter(
+            recipe__shopping_cart__user=request.user
+        ).order_by('ingredient__name').values(
+            'ingredient__name', 'ingredient__measurement_unit'
+        ).annotate(amount=Sum('amount'))
+        return self.create_shopping_cart(ingredients)
 
 
 class TagViewSet(viewsets.ModelViewSet):
