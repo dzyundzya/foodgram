@@ -91,7 +91,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             favorite.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         return Response(status=status.HTTP_400_BAD_REQUEST)
-    
+
     @staticmethod
     def create_shopping_cart(user):
         shopping_cart = [
@@ -104,8 +104,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
                      ).annotate(amount=Sum('recipe__amount'))
         )
         ingredients_list = [
-            f'{ingredient["name"]}: {ingredient["amount"]} {ingredient["unit"]}'
-            for ingredient in ingredients
+            f'{ingr["name"]}: {ingr["amount"]} {ingr["unit"]}'
+            for ingr in ingredients
         ]
         shopping_cart.extend(ingredients_list)
         return "\n".join(shopping_cart)
