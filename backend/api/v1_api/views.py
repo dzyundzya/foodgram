@@ -1,4 +1,4 @@
-from django.db.models import F, Sum
+from django.db.models import Sum
 from django.http.response import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, status, permissions, viewsets
@@ -110,6 +110,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         )
         response['Content-Desposition'] = f'attachment; filename={filename}'
         return response
+
     @action(
         detail=False,
         permission_classes=[permissions.IsAuthenticated]
