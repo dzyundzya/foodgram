@@ -1,13 +1,17 @@
-from rest_framework import status, permissions, viewsets
+from django.db.models import F, Sum
+from django.http.response import HttpResponse
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters, status, permissions, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from .permission import AdminOrReadOnly, AuthorOrAdminOrReadOnly
-from recipes.models import Favorite, Ingredient, Recipe, ShoppingCart, Tag
 from .serializers import (
     BriefRecipeSerializer, CreateRecipesSerializer,
-    FullRecipeSerializer, IngredientSerializer, TagSerializer
+    FullRecipeSerializer, IngredientInRecipe,
+    IngredientSerializer, TagSerializer,
 )
+from recipes.models import Favorite, Ingredient, Recipe, ShoppingCart, Tag
 
 
 class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
@@ -15,12 +19,17 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     permission_classes = (AdminOrReadOnly,)
+    pagination_class = None
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('^name',)
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
 
     queryset = Recipe.objects.all()
     permission_classes = (AuthorOrAdminOrReadOnly,)
+    filter_backends = (DjangoFilterBackend,)
+    filterset_fields = ('author',)
 
     def get_serializer_class(self):
         if self.action in ('list', 'retrieve', 'get-link'):
@@ -82,6 +91,40 @@ class RecipeViewSet(viewsets.ModelViewSet):
             favorite.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         return Response(status=status.HTTP_400_BAD_REQUEST)
+    
+    @staticmethod
+    def create_shopping_cart(user):
+        shopping_cart = [
+            'Список покупок:'
+        ]
+        ingredients = (
+            IngredientInRecipe.objects.filter(
+                recipe__recipe__shopping_cart__user=user
+            ).values('name', unit=F('measurement_unit')
+                     ).annotate(amount=Sum('recipe__amount'))
+        )
+        ingredients_list = [
+            f'{ingredient["name"]}: {ingredient["amount"]} {ingredient["unit"]}'
+            for ingredient in ingredients
+        ]
+        shopping_cart.extend(ingredients_list)
+        return "\n".join(shopping_cart)
+
+    @action(
+        detail=False,
+        permission_classes=[permissions.IsAuthenticated]
+    )
+    def download_shopping_cart(self, request):
+        user = request.user
+        if not user.shopping_cart.exists():
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        filename = f'{user.username}_shopping_cart.txt'
+        shopping_cart = self.create_shopping_cart(user)
+        response = HttpResponse(
+            shopping_cart, content_type='text.txt; charset=utf-8'
+        )
+        response['Content-Desposition'] = f'attachment; filename={filename}'
+        return response
 
 
 class TagViewSet(viewsets.ModelViewSet):

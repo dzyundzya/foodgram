@@ -6,3 +6,4 @@ djoser
 psycopg2-binary==2.9.3
 django-link-shortener
 python-dotenv==1.0.1 
+django-filter==23.1
