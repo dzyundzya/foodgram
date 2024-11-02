@@ -146,11 +146,12 @@ class CreateRecipesSerializer(serializers.ModelSerializer):
         IngredientInRecipe.objects.bulk_create(ingredients_list)
 
     def create(self, validated_data):
+        request = self.context.get('request')
         ingredients = validated_data.pop('ingredients')
         tags = validated_data.pop('tags')
-        recipe = Recipe.objects.create(**validated_data)
-        self.create_ingredients(recipe, ingredients)
+        recipe = Recipe.objects.create(author=request.user, **validated_data)
         recipe.tags.set(tags)
+        self.create_ingredients(recipe, ingredients)
         return recipe
 
     def update(self, instance, validated_data):
