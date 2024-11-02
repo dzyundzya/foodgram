@@ -32,7 +32,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     filterset_fields = ('author',)
 
     def get_serializer_class(self):
-        if self.action in ('list', 'retrieve', 'get-link'):
+        if self.action in ('list', 'retrieve'):
             return FullRecipeSerializer
         return CreateRecipesSerializer
 
