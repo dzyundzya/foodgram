@@ -161,10 +161,6 @@ class CreateRecipesSerializer(serializers.ModelSerializer):
         instance.tags.clear()
         IngredientInRecipe.objects.filter(recipe=instance).delete()
         instance.tags.set(validated_data.pop('tags'))
-        if 'ingredients' != validated_data:
-            raise serializers.ValidationError('Добавьте ингредиент')
-        if 'tags' != validated_data:
-            raise serializers.ValidationError('Добавьте тег')
         ingredients = validated_data.pop('ingredients')
         self.create_ingredients(instance, ingredients)
         return super().update(instance, validated_data)
