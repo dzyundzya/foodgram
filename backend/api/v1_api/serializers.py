@@ -53,12 +53,16 @@ class DjoserUserSerializer(UserSerializer):
 
 class IngredientInRecipesSerializer(serializers.ModelSerializer):
 
-    id = serializers.PrimaryKeyRelatedField(
-        queryset=Ingredient.objects.all(),
+    # id = serializers.PrimaryKeyRelatedField(
+    #     queryset=Ingredient.objects.all(),
+    # )
+    name = serializers.SlugRelatedField(
+        'name', source='ingredient', queryset=Ingredient.objects.all()
     )
-    name = serializers.ReadOnlyField(source='ingredient.name',)
-    measurement_unit = serializers.ReadOnlyField(
-        source='ingredient.measurement_unit',
+    measurement_unit = serializers.SlugRelatedField(
+        'measurement_unit',
+        source='ingredient',
+        queryset=Ingredient.objects.all()
     )
 
     class Meta:
@@ -99,10 +103,6 @@ class FullRecipeSerializer(serializers.ModelSerializer):
             'is_favorited',
         )
 
-    def get_ingredients(self, recipe):
-        ingredient = IngredientInRecipe.objects.filter(recipe=recipe)
-        return IngredientInRecipesSerializer(ingredient, many=True).data
-
     def get_is_in_shopping_cart(self, obj):
         request = self.context.get('request')
         if request.user.is_anonymous:
@@ -119,9 +119,11 @@ class FullRecipeSerializer(serializers.ModelSerializer):
 class CreateRecipesSerializer(serializers.ModelSerializer):
 
     image = Base64ImageField()
-    ingredients = IngredientInRecipesSerializer(many=True)
+    ingredients = IngredientInRecipesSerializer(
+        source='ingredient_recipes', many=True
+    )
     tags = serializers.PrimaryKeyRelatedField(
-        queryset=Tag.objects.all(), many=True
+        queryset=Tag.objects.all(), many=True,
     )
 
     class Meta:
