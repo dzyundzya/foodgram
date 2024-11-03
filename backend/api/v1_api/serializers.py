@@ -141,11 +141,14 @@ class CreateRecipesSerializer(serializers.ModelSerializer):
     def create_ingredients(recipe, ingredients):
         ingredients_list = []
         for ingredient in ingredients:
+            ingredient_data = ingredient.pop('id'), ingredient.pop('amount')
+            if not all(k in ingredient_data for k in ('id', 'amount')):
+                raise ValueError("Invalid ingredient data")
             ingredients_list.append(
                 IngredientInRecipe(
                     recipe=recipe,
-                    ingredient=ingredient.pop('id'),
-                    amount=ingredient.pop('amount'),
+                    ingredient=ingredient_data[0],
+                    amount=ingredient_data[1],
                 )
             )
         IngredientInRecipe.objects.bulk_create(ingredients_list)
@@ -163,8 +166,11 @@ class CreateRecipesSerializer(serializers.ModelSerializer):
         instance.tags.clear()
         IngredientInRecipe.objects.filter(recipe=instance).delete()
         instance.tags.set(validated_data.pop('tags'))
-        ingredients = validated_data.pop('ingredients')
-        self.create_ingredients(instance, ingredients)
+        if 'ingredients' in validated_data:
+            ingredients = validated_data.pop('ingredients')
+            self.create_ingredients(instance, ingredients)
+        else:
+            raise KeyError('ingredients key is missing')
         return super().update(instance, validated_data)
 
 
