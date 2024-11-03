@@ -120,6 +120,17 @@ class RecipeViewSet(viewsets.ModelViewSet):
         ).annotate(amount=Sum('amount'))
         return self.create_shopping_cart(ingredients)
 
+    @action(
+        detail=True,
+        url_path='get-link'
+    )
+    def get_link(self, request, pk=None):
+        recipe_id = self.kwargs[self.lookup_field]
+        frontend_url = 'https://dzyundzya-foodgram.ddns.net/'
+        url_to_recipes = 'recipes'
+        short_link = f'{frontend_url}/{url_to_recipes}/{recipe_id}/'
+        return Response({"short-link": short_link})
+
 
 class TagViewSet(viewsets.ModelViewSet):
 
