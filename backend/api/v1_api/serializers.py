@@ -53,6 +53,9 @@ class DjoserUserSerializer(UserSerializer):
 
 class IngredientInRecipesSerializer(serializers.ModelSerializer):
 
+    id = serializers.PrimaryKeyRelatedField(
+        queryset=Ingredient.objects.all()
+    )
     name = serializers.SlugRelatedField(
         'name', source='ingredient', queryset=Ingredient.objects.all()
     )

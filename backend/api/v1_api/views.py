@@ -130,7 +130,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def get_link(self, request, pk=None):
         recipe_id = self.kwargs[self.lookup_field]
         frontend_url = 'https://fg'
-        url_to_recipes = 'recipes'
+        url_to_recipes = 'recipessss'
         short_link = f'{frontend_url}/{url_to_recipes}/{recipe_id}/'
         return Response({"short-link": short_link})
 
