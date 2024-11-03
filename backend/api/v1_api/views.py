@@ -36,6 +36,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return FullRecipeSerializer
         return CreateRecipesSerializer
 
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
+
     @action(
         methods=['POST', 'DELETE'],
         detail=True,
@@ -126,7 +129,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     )
     def get_link(self, request, pk=None):
         recipe_id = self.kwargs[self.lookup_field]
-        frontend_url = 'https://dzyundzya-foodgram.ddns.net/'
+        frontend_url = 'https://fg'
         url_to_recipes = 'recipes'
         short_link = f'{frontend_url}/{url_to_recipes}/{recipe_id}/'
         return Response({"short-link": short_link})

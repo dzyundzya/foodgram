@@ -131,25 +131,21 @@ class CreateRecipesSerializer(serializers.ModelSerializer):
         )
 
     @staticmethod
-    def create_ingredients(recipe, ingredients):
-        ingredients_list = []
-        for ingredient in ingredients:
-            ingredient_data = ingredient.pop('id'), ingredient.pop('amount')
-            if not all(k in ingredient_data for k in ('id', 'amount')):
-                raise ValueError("Invalid ingredient data")
-            ingredients_list.append(
-                IngredientInRecipe(
-                    recipe=recipe,
-                    ingredient=ingredient_data[0],
-                    amount=ingredient_data[1],
-                )
+    def create_ingredients(recipe, ingredient_data):
+        ingredients_list = [
+            IngredientInRecipe(
+                recipe=recipe,
+                ingredient=ingredient_data['ingredient']['id'],
+                amount=ingredient_data['amount']
             )
+            for ingredient in ingredient_data
+        ]
         IngredientInRecipe.objects.bulk_create(ingredients_list)
 
     def create(self, validated_data):
-        request = self.context.get('request')
-        ingredients = validated_data.pop('ingredients')
-        tags = validated_data.pop('tags')
+        request = self.context.get('request', None)
+        ingredients = validated_data.pop('ingredient_recipes')
+        tags = validated_data.pop('tags', [])
         recipe = Recipe.objects.create(author=request.user, **validated_data)
         recipe.tags.set(tags)
         self.create_ingredients(recipe, ingredients)
@@ -160,7 +156,7 @@ class CreateRecipesSerializer(serializers.ModelSerializer):
         IngredientInRecipe.objects.filter(recipe=instance).delete()
         instance.tags.set(validated_data.pop('tags'))
         if 'ingredients' in validated_data:
-            ingredients = validated_data.pop('ingredients')
+            ingredients = validated_data.pop('ingredient_recipes')
             self.create_ingredients(instance, ingredients)
         else:
             raise KeyError('ingredients key is missing')
