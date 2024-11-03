@@ -53,9 +53,6 @@ class DjoserUserSerializer(UserSerializer):
 
 class IngredientInRecipesSerializer(serializers.ModelSerializer):
 
-    # id = serializers.PrimaryKeyRelatedField(
-    #     queryset=Ingredient.objects.all(),
-    # )
     name = serializers.SlugRelatedField(
         'name', source='ingredient', queryset=Ingredient.objects.all()
     )
@@ -119,12 +116,7 @@ class FullRecipeSerializer(serializers.ModelSerializer):
 class CreateRecipesSerializer(serializers.ModelSerializer):
 
     image = Base64ImageField()
-    ingredients = IngredientInRecipesSerializer(
-        source='ingredient_recipes', many=True
-    )
-    tags = serializers.PrimaryKeyRelatedField(
-        queryset=Tag.objects.all(), many=True,
-    )
+    ingredients = IngredientInRecipesSerializer(many=True)
 
     class Meta:
         model = Recipe
