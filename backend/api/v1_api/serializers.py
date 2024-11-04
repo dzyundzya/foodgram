@@ -2,7 +2,7 @@ import base64
 
 from django.core.files.base import ContentFile
 from djoser.serializers import UserSerializer
-from rest_framework import serializers
+from rest_framework import serializers, validators
 
 from recipes.models import Ingredient, IngredientInRecipe, Recipe, Tag, User
 from users.models import Subscribe
@@ -148,23 +148,39 @@ class CreateRecipesSerializer(serializers.ModelSerializer):
                     recipe=recipe
                 )
             )
-        IngredientInRecipe.objects.bulk_create(ingredients_list)
+        try:
+            IngredientInRecipe.objects.bulk_create(ingredients_list)
+        except Exception as e:
+            raise validators.ValidationError(
+                f'Ошибка при создании ингредиентов: {e}'
+            )
 
     def create(self, validated_data):
         request = self.context.get('request', None)
         ingredients = validated_data.pop('ingredients')
         tags = validated_data.pop('tags')
-        recipe = Recipe.objects.create(author=request.user, **validated_data)
-        recipe.tags.set(tags)
-        self.create_ingredients(recipe, ingredients)
+        try:
+            recipe = Recipe.objects.create(
+                author=request.user, **validated_data)
+            recipe.tags.set(tags)
+            self.create_ingredients(recipe, ingredients)
+        except Exception as e:
+            raise validators.ValidationError(
+                f'Ошибка при создании рецепта: {e}'
+            )
         return recipe
 
     def update(self, instance, validated_data):
         instance.tags.clear()
-        IngredientInRecipe.objects.filter(recipe=instance).delete()
+        try:
+            IngredientInRecipe.objects.filter(recipe=instance).delete()
+        except Exception as e:
+            raise validators.ValidationError(
+                f'Ошибка при удалении ингредиентов: {e}'
+            )
         instance.tags.set(validated_data.pop('tags'))
         if 'ingredients' in validated_data:
-            ingredients = validated_data.pop('ingredient_recipes')
+            ingredients = validated_data.pop('ingredients')
             self.create_ingredients(instance, ingredients)
         else:
             raise KeyError('ingredients key is missing')
