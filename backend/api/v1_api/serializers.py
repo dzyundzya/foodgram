@@ -1,5 +1,6 @@
 import base64
 
+from django.db.models import F
 from django.core.files.base import ContentFile
 from djoser.serializers import UserSerializer
 from rest_framework import serializers, validators
@@ -53,17 +54,11 @@ class DjoserUserSerializer(UserSerializer):
 
 class IngredientInRecipesSerializer(serializers.ModelSerializer):
 
-    id = serializers.PrimaryKeyRelatedField(
-        queryset=Ingredient.objects.all()
-    )
-    name = serializers.ReadOnlyField(source='ingredient.name')
-    measurement_unit = serializers.ReadOnlyField(
-        source='ingredient.measurement_unit'
-    )
+    id = serializers.IntegerField(write_only=True)
 
     class Meta:
         model = IngredientInRecipe
-        fields = ('id', 'name', 'measurement_unit', 'amount')
+        fields = ('id', 'amount')
 
 
 class IngredientSerializer(serializers.ModelSerializer):
@@ -77,9 +72,7 @@ class FullRecipeSerializer(serializers.ModelSerializer):
 
     author = DjoserUserSerializer(read_only=True)
     image = Base64ImageField()
-    ingredients = IngredientInRecipesSerializer(
-        source='ingredient_recipes', many=True
-    )
+    ingredients = serializers.SerializerMethodField()
     tags = TagSerializer(read_only=True, many=True)
     is_in_shopping_cart = serializers.SerializerMethodField()
     is_favorited = serializers.SerializerMethodField()
@@ -100,8 +93,13 @@ class FullRecipeSerializer(serializers.ModelSerializer):
         )
 
     def get_ingredients(self, obj):
-        ingredients = IngredientInRecipe.objects.filter(recipe=obj)
-        return IngredientInRecipesSerializer(ingredients, many=True).data
+        recipe = obj
+        return recipe.ingredients.values(
+            'id',
+            'name',
+            'measurement_unit',
+            amount=F('ingredientinrecipe__amount')
+        )
 
     def get_is_in_shopping_cart(self, obj):
         request = self.context.get('request')
@@ -247,4 +245,4 @@ class SubscriptionsSerializer(serializers.ModelSerializer):
         return BriefRecipeSerializer(recipes, many=True).data
 
     def get_recipes_count(self, obj):
-        return Recipe.objects.filter(author=obj.author).count()
+        return obj.recipes.count()
