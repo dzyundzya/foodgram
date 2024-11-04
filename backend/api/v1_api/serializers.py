@@ -56,13 +56,9 @@ class IngredientInRecipesSerializer(serializers.ModelSerializer):
     id = serializers.PrimaryKeyRelatedField(
         queryset=Ingredient.objects.all()
     )
-    name = serializers.SlugRelatedField(
-        'name', source='ingredient', queryset=Ingredient.objects.all()
-    )
-    measurement_unit = serializers.SlugRelatedField(
-        'measurement_unit',
-        source='ingredient',
-        queryset=Ingredient.objects.all()
+    name = serializers.ReadOnlyField(source='ingredient.name')
+    measurement_unit = serializers.ReadOnlyField(
+        source='ingredient.measurement_unit'
     )
 
     class Meta:
@@ -103,6 +99,10 @@ class FullRecipeSerializer(serializers.ModelSerializer):
             'is_favorited',
         )
 
+    def get_ingredients(self, obj):
+        ingredients = IngredientInRecipe.objects.filter(recipe=obj)
+        return IngredientInRecipesSerializer(ingredients, many=True).data
+
     def get_is_in_shopping_cart(self, obj):
         request = self.context.get('request')
         if request.user.is_anonymous:
@@ -120,6 +120,10 @@ class CreateRecipesSerializer(serializers.ModelSerializer):
 
     image = Base64ImageField()
     ingredients = IngredientInRecipesSerializer(many=True)
+    tags = serializers.PrimaryKeyRelatedField(
+        queryset=Tag.objects.all(),
+        many=True,
+    )
 
     class Meta:
         model = Recipe
@@ -134,21 +138,22 @@ class CreateRecipesSerializer(serializers.ModelSerializer):
         )
 
     @staticmethod
-    def create_ingredients(recipe, ingredient_data):
-        ingredients_list = [
-            IngredientInRecipe(
-                recipe=recipe,
-                ingredient=ingredient_data['ingredient']['id'],
-                amount=ingredient_data['amount']
+    def create_ingredients(recipe, ingredients):
+        ingredients_list = []
+        for ingredient_data in ingredients:
+            ingredients_list.append(
+                IngredientInRecipe(
+                    ingredient=ingredient_data.pop('id'),
+                    amount=ingredient_data.pop('amount'),
+                    recipe=recipe
+                )
             )
-            for ingredient in ingredient_data
-        ]
         IngredientInRecipe.objects.bulk_create(ingredients_list)
 
     def create(self, validated_data):
         request = self.context.get('request', None)
-        ingredients = validated_data.pop('ingredient_recipes')
-        tags = validated_data.pop('tags', [])
+        ingredients = validated_data.pop('ingredients')
+        tags = validated_data.pop('tags')
         recipe = Recipe.objects.create(author=request.user, **validated_data)
         recipe.tags.set(tags)
         self.create_ingredients(recipe, ingredients)
