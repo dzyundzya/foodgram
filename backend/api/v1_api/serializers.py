@@ -141,8 +141,8 @@ class CreateRecipesSerializer(serializers.ModelSerializer):
         for ingredient_data in ingredients:
             ingredients_list.append(
                 IngredientInRecipe(
-                    ingredient=ingredient_data.pop('id'),
-                    amount=ingredient_data.pop('amount'),
+                    ingredient=Ingredient.objects.get(id=ingredient_data['id']),
+                    amount=ingredient_data['amount'],
                     recipe=recipe
                 )
             )
