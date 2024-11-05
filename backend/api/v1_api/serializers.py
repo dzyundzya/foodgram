@@ -1,6 +1,5 @@
 import base64
 
-from django.db.models import F
 from django.core.files.base import ContentFile
 from djoser.serializers import UserSerializer
 from rest_framework import serializers, validators
@@ -54,11 +53,17 @@ class DjoserUserSerializer(UserSerializer):
 
 class IngredientInRecipesSerializer(serializers.ModelSerializer):
 
-    id = serializers.IntegerField(write_only=True)
+    id = serializers.PrimaryKeyRelatedField(
+        queryset=Ingredient.objects.all()
+    )
+    name = serializers.ReadOnlyField(source='ingredient.name')
+    measurement_unit = serializers.ReadOnlyField(
+        source='ingredient.measurement_unit'
+    )
 
     class Meta:
         model = IngredientInRecipe
-        fields = ('id', 'amount')
+        fields = ('id', 'name', 'amount', 'measurement_unit')
 
 
 class IngredientSerializer(serializers.ModelSerializer):
@@ -72,7 +77,10 @@ class FullRecipeSerializer(serializers.ModelSerializer):
 
     author = DjoserUserSerializer(read_only=True)
     image = Base64ImageField()
-    ingredients = serializers.SerializerMethodField()
+    ingredients = IngredientInRecipesSerializer(
+        source='ingredient_recipes',
+        many=True,
+    )
     tags = TagSerializer(read_only=True, many=True)
     is_in_shopping_cart = serializers.SerializerMethodField()
     is_favorited = serializers.SerializerMethodField()
@@ -93,13 +101,8 @@ class FullRecipeSerializer(serializers.ModelSerializer):
         )
 
     def get_ingredients(self, obj):
-        recipe = obj
-        return recipe.ingredients.values(
-            'id',
-            'name',
-            'measurement_unit',
-            amount=F('ingredientinrecipe__amount')
-        )
+        ingredients = IngredientInRecipe.objects.filter(recipe=obj)
+        return IngredientInRecipesSerializer(ingredients, many=True).data
 
     def get_is_in_shopping_cart(self, obj):
         request = self.context.get('request')
@@ -141,11 +144,9 @@ class CreateRecipesSerializer(serializers.ModelSerializer):
         for ingredient_data in ingredients:
             ingredients_list.append(
                 IngredientInRecipe(
-                    ingredient=Ingredient.objects.get(
-                        id=ingredient_data['id']
-                    ),
-                    amount=ingredient_data['amount'],
-                    recipe=recipe
+                    recipe=recipe,
+                    ingredient=ingredient_data.pop('id'),
+                    amount=ingredient_data.pop('amount'),
                 )
             )
         try:
@@ -183,7 +184,7 @@ class CreateRecipesSerializer(serializers.ModelSerializer):
             ingredients = validated_data.pop('ingredients')
             self.create_ingredients(instance, ingredients)
         else:
-            raise KeyError('ingredients key is missing')
+            raise KeyError('ingredients - ключ отсутсвует')
         return super().update(instance, validated_data)
 
 
