@@ -2,7 +2,7 @@ import base64
 
 from django.core.files.base import ContentFile
 from djoser.serializers import UserSerializer
-from rest_framework import serializers, validators
+from rest_framework import serializers
 
 from recipes.models import Ingredient, IngredientInRecipe, Recipe, Tag, User
 from users.models import Subscribe
@@ -168,6 +168,7 @@ class CreateRecipesSerializer(serializers.ModelSerializer):
         self.create_tags(validated_data.pop('tags'), instance)
         self.create_ingredients(validated_data.pop('ingredients'), instance)
         return super().update(instance, validated_data)
+
 
 class BriefRecipeSerializer(serializers.ModelSerializer):
 
