@@ -29,7 +29,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     permission_classes = (AuthorOrAdminOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
-    filterset_fields = ('tag',)
+    filterset_fields = ('tags',)
 
     def get_serializer_class(self):
         if self.action in ('list', 'retrieve'):
