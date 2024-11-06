@@ -29,7 +29,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     permission_classes = (AuthorOrAdminOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
-    filterset_fields = ('author',)
+    filterset_fields = ('tag',)
 
     def get_serializer_class(self):
         if self.action in ('list', 'retrieve'):
@@ -37,7 +37,18 @@ class RecipeViewSet(viewsets.ModelViewSet):
         return CreateRecipesSerializer
 
     def perform_create(self, serializer):
-        serializer.save(author=self.request.user)
+        self.object = serializer.save(author=self.request.user)
+
+    def perform_update(self, serializer):
+        self.object = serializer.save()
+
+    def create(self, request, *args, **kwargs):
+        super().create(request, *args, **kwargs)
+        return Response(FullRecipeSerializer(instance=self.object).data)
+
+    def update(self, request, *args, **kwargs):
+        super().update(request, *args, **kwargs)
+        return Response(FullRecipeSerializer(instance=self.object).data)        
 
     @action(
         methods=['POST', 'DELETE'],

@@ -53,12 +53,10 @@ class DjoserUserSerializer(UserSerializer):
 
 class IngredientInRecipesSerializer(serializers.ModelSerializer):
 
-    id = serializers.PrimaryKeyRelatedField(
+    name = serializers.SlugRelatedField(
+        'name',
+        source='ingredient',
         queryset=Ingredient.objects.all()
-    )
-    name = serializers.ReadOnlyField(source='ingredient.name')
-    measurement_unit = serializers.ReadOnlyField(
-        source='ingredient.measurement_unit'
     )
 
     class Meta:
@@ -78,7 +76,7 @@ class FullRecipeSerializer(serializers.ModelSerializer):
     author = DjoserUserSerializer(read_only=True)
     image = Base64ImageField()
     ingredients = IngredientInRecipesSerializer(
-        source='ingredient_recipes',
+        source='recipe_ingredients',
         many=True,
     )
     tags = TagSerializer(read_only=True, many=True)
@@ -100,10 +98,6 @@ class FullRecipeSerializer(serializers.ModelSerializer):
             'is_favorited',
         )
 
-    def get_ingredients(self, obj):
-        ingredients = IngredientInRecipe.objects.filter(recipe=obj)
-        return IngredientInRecipesSerializer(ingredients, many=True).data
-
     def get_is_in_shopping_cart(self, obj):
         request = self.context.get('request')
         if request.user.is_anonymous:
@@ -120,11 +114,16 @@ class FullRecipeSerializer(serializers.ModelSerializer):
 class CreateRecipesSerializer(serializers.ModelSerializer):
 
     image = Base64ImageField()
-    ingredients = IngredientInRecipesSerializer(many=True)
+    ingredients = IngredientInRecipesSerializer(
+        source='recipe_ingredients',
+        many=True
+    )
     tags = serializers.PrimaryKeyRelatedField(
         queryset=Tag.objects.all(),
         many=True,
     )
+
+    MANY_FIELDS = {'recipe_ingredients': 'update_ingredients'}
 
     class Meta:
         model = Recipe
@@ -138,54 +137,33 @@ class CreateRecipesSerializer(serializers.ModelSerializer):
             'cooking_time',
         )
 
-    @staticmethod
-    def create_ingredients(recipe, ingredients):
-        ingredients_list = []
-        for ingredient_data in ingredients:
-            ingredients_list.append(
-                IngredientInRecipe(
-                    recipe=recipe,
-                    ingredient=ingredient_data.pop('id'),
-                    amount=ingredient_data.pop('amount'),
-                )
-            )
-        try:
-            IngredientInRecipe.objects.bulk_create(ingredients_list)
-        except Exception as e:
-            raise validators.ValidationError(
-                f'Ошибка при создании ингредиентов: {e}'
-            )
+    @classmethod
+    def update_ingredients(cls, instance, data):
+        pass
+
+    def update_many2us(self, instance, validated_data):
+        for field, updater_name in self.MANY_FIELDS.items():
+            data = validated_data.pop(field, None)
+            updater = getattr(self, updater_name)
+            if data is None or not self.partial:
+                updater(instance, data or [])
+        return instance
+    
+    def split_validated_data(self, validated_data):
+        return {
+            key: value for key, value in validated_data.items()
+            if key not in self.MANY_FIELDS
+        }, {
+            key: validated_data[key] for key in self.MANY_FIELDS
+        }
 
     def create(self, validated_data):
-        request = self.context.get('request', None)
-        ingredients = validated_data.pop('ingredients')
-        tags = validated_data.pop('tags')
-        try:
-            recipe = Recipe.objects.create(
-                author=request.user, **validated_data)
-            recipe.tags.set(tags)
-            self.create_ingredients(recipe, ingredients)
-        except Exception as e:
-            raise validators.ValidationError(
-                f'Ошибка при создании рецепта: {e}'
-            )
-        return recipe
-
+        basic, many2us = self.split_validated_data(validated_data)
+        return self.update_many2us(super().create(basic), many2us)
+    
     def update(self, instance, validated_data):
-        instance.tags.clear()
-        try:
-            IngredientInRecipe.objects.filter(recipe=instance).delete()
-        except Exception as e:
-            raise validators.ValidationError(
-                f'Ошибка при удалении ингредиентов: {e}'
-            )
-        instance.tags.set(validated_data.pop('tags'))
-        if 'ingredients' in validated_data:
-            ingredients = validated_data.pop('ingredients')
-            self.create_ingredients(instance, ingredients)
-        else:
-            raise KeyError('ingredients key is missing')
-        return super().update(instance, validated_data)
+        basic, many2us = self.split_validated_data(validated_data)
+        return self.update_many2us(super().update(instance, basic), many2us)
 
 
 class BriefRecipeSerializer(serializers.ModelSerializer):
