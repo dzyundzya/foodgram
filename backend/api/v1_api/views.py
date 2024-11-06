@@ -44,11 +44,11 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         super().create(request, *args, **kwargs)
-        return Response(FullRecipeSerializer(instance=self.object).data)
+        return Response(CreateRecipesSerializer(instance=self.object).data)
 
     def update(self, request, *args, **kwargs):
         super().update(request, *args, **kwargs)
-        return Response(FullRecipeSerializer(instance=self.object).data)
+        return Response(CreateRecipesSerializer(instance=self.object).data)
 
     @action(
         methods=['POST', 'DELETE'],
@@ -113,8 +113,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
         for ingredient in ingredients:
             shopping_cart += (
                 f'\n{ingredient["ingredient__name"]} '
-                f'({ingredient["ingredient__measurement_unit"]}) - '
-                f'{ingredient["amount"]}'
+                f'{ingredient["amount"]} - '
+                f'({ingredient["ingredient__measurement_unit"]})'
             )
         response = HttpResponse(
             shopping_cart, content_type='text.txt; charset=utf-8'
