@@ -2,7 +2,7 @@ import base64
 
 from django.core.files.base import ContentFile
 from djoser.serializers import UserSerializer
-from rest_framework import serializers, validators
+from rest_framework import serializers
 
 from recipes.models import Ingredient, IngredientInRecipe, Recipe, Tag, User
 from users.models import Subscribe
@@ -148,7 +148,7 @@ class CreateRecipesSerializer(serializers.ModelSerializer):
             if data is None or not self.partial:
                 updater(instance, data or [])
         return instance
-    
+
     def split_validated_data(self, validated_data):
         return {
             key: value for key, value in validated_data.items()
@@ -160,7 +160,7 @@ class CreateRecipesSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         basic, many2us = self.split_validated_data(validated_data)
         return self.update_many2us(super().create(basic), many2us)
-    
+
     def update(self, instance, validated_data):
         basic, many2us = self.split_validated_data(validated_data)
         return self.update_many2us(super().update(instance, basic), many2us)
