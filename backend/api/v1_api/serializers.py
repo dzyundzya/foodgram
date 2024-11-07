@@ -149,7 +149,7 @@ class FullRecipeSerializer(DefaultRecipeSerializer):
         return obj.favorites.filter(user=request.user).exists()
 
 
-class CreateRecipesSerializer(serializers.ModelSerializer):
+class CreateRecipesSerializer(DefaultRecipeSerializer):
 
     tags = serializers.PrimaryKeyRelatedField(
         queryset=Tag.objects.all(),
