@@ -44,11 +44,11 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         super().create(request, *args, **kwargs)
-        return Response(CreateRecipesSerializer(instance=self.object).data)
+        return Response(FullRecipeSerializer(instance=self.object).data)
 
     def update(self, request, *args, **kwargs):
         super().update(request, *args, **kwargs)
-        return Response(CreateRecipesSerializer(instance=self.object).data)
+        return Response(FullRecipeSerializer(instance=self.object).data)
 
     @action(
         methods=['POST', 'DELETE'],

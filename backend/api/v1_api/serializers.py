@@ -15,6 +15,13 @@ class TagSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'slug')
 
 
+class IngredientSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Ingredient
+        fields = ('id', 'name', 'measurement_unit')
+
+
 class Base64ImageField(serializers.ImageField):
 
     def to_internal_value(self, data):
@@ -51,41 +58,61 @@ class DjoserUserSerializer(UserSerializer):
         return False
 
 
-class IngredientInRecipesSerializer(serializers.ModelSerializer):
+class BriefRecipeSerializer(serializers.ModelSerializer):
+
+    image = Base64ImageField()
+
+    class Meta:
+        model = Recipe
+        fields = ('id', 'name', 'image', 'cooking_time')
+
+
+class AvatarSerializer(serializers.ModelSerializer):
+
+    avatar = Base64ImageField()
+
+    class Meta:
+        model = User
+        fields = ('avatar',)
+
+
+class SubscriberSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Subscribe
+        fields = ('id', 'author', 'user')
+
+
+class IngredientInRecipeSerializer(serializers.ModelSerializer):
 
     name = serializers.SlugRelatedField(
         'name',
         source='ingredient',
         queryset=Ingredient.objects.all()
     )
+    measurement_unit = serializers.SlugRelatedField(
+        'measurement_unit',
+        source='ingredient',
+        queryset=Ingredient.objects.all()
+    )
 
     class Meta:
         model = IngredientInRecipe
-        fields = ('id', 'name', 'amount')
+        fields = ['id', 'name', 'amount', 'measurement_unit']
 
 
-class IngredientSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Ingredient
-        fields = ('id', 'name', 'measurement_unit')
-
-
-class FullRecipeSerializer(serializers.ModelSerializer):
+class DefaultRecipeSerializer(serializers.ModelSerializer):
 
     author = DjoserUserSerializer(read_only=True)
     image = Base64ImageField()
-    ingredients = IngredientInRecipesSerializer(
+    ingredients = IngredientInRecipeSerializer(
         source='recipe_ingredients',
-        many=True,
+        many=True
     )
-    tags = TagSerializer(read_only=True, many=True)
-    is_in_shopping_cart = serializers.SerializerMethodField()
-    is_favorited = serializers.SerializerMethodField()
 
     class Meta:
         model = Recipe
-        fields = (
+        fields = [
             'id',
             'author',
             'name',
@@ -94,9 +121,20 @@ class FullRecipeSerializer(serializers.ModelSerializer):
             'ingredients',
             'tags',
             'cooking_time',
+        ]
+
+
+class FullRecipeSerializer(DefaultRecipeSerializer):
+
+    tags = TagSerializer(read_only=True, many=True)
+    is_in_shopping_cart = serializers.SerializerMethodField()
+    is_favorited = serializers.SerializerMethodField()
+
+    class Meta(DefaultRecipeSerializer.Meta):
+        fields = DefaultRecipeSerializer.Meta.fields + [
             'is_in_shopping_cart',
-            'is_favorited',
-        )
+            'is_favorited'
+        ]
 
     def get_is_in_shopping_cart(self, obj):
         request = self.context.get('request')
@@ -113,29 +151,12 @@ class FullRecipeSerializer(serializers.ModelSerializer):
 
 class CreateRecipesSerializer(serializers.ModelSerializer):
 
-    image = Base64ImageField()
-    ingredients = IngredientInRecipesSerializer(
-        source='recipe_ingredients',
-        many=True
-    )
     tags = serializers.PrimaryKeyRelatedField(
         queryset=Tag.objects.all(),
         many=True,
     )
 
     MANY_FIELDS = {'recipe_ingredients': 'update_ingredients'}
-
-    class Meta:
-        model = Recipe
-        fields = (
-            'id',
-            'name',
-            'image',
-            'text',
-            'ingredients',
-            'tags',
-            'cooking_time',
-        )
 
     @classmethod
     def update_ingredients(cls, instance, data):
@@ -164,31 +185,6 @@ class CreateRecipesSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         basic, many2us = self.split_validated_data(validated_data)
         return self.update_many2us(super().update(instance, basic), many2us)
-
-
-class BriefRecipeSerializer(serializers.ModelSerializer):
-
-    image = Base64ImageField()
-
-    class Meta:
-        model = Recipe
-        fields = ('id', 'name', 'image', 'cooking_time')
-
-
-class AvatarSerializer(serializers.ModelSerializer):
-
-    avatar = Base64ImageField()
-
-    class Meta:
-        model = User
-        fields = ('avatar',)
-
-
-class SubscriberSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Subscribe
-        fields = ('id', 'author', 'user')
 
 
 class SubscriptionsSerializer(serializers.ModelSerializer):
