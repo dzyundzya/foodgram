@@ -159,8 +159,23 @@ class CreateRecipesSerializer(DefaultRecipeSerializer):
     MANY_FIELDS = {'recipe_ingredients': 'update_ingredients'}
 
     @classmethod
-    def update_ingredients(cls, instance, data):
-        pass
+    def update_ingredients(cls, instance, new_ingredients):
+        old_ingredients_dict = {ri.ingredient_id: ri for ri in instance.recipe_ingredients.all()}
+        new_ingredients_dict = {ri['ingredient'].id: ri for ri in new_ingredients if ri['ingredient'].id not in old_ingredients_dict}
+        updated_ingredients_dict = {ri['ingredient'].id: ri for ri in new_ingredients if ri['ingredient'].id in old_ingredients_dict}
+        old_ingredients_set = set(old_ingredients_dict.keys()) - set(new_ingredients_dict.keys())
+        updated_ingredients_dict = dict(filter(
+            lambda kv: kv[1]['amount'] != old_ingredients_dict[kv[0]].amount
+            and (kv[1]['amount'] is not None or old_ingredients_dict[kv[0]].amount is not None),
+            updated_ingredients_dict.items()
+        ))
+        IngredientInRecipe.objects.filter(recipe_id=instance.id, ingredient_id__in=old_ingredients_set).delete()
+        IngredientInRecipe.objects.bulk_create([
+            IngredientInRecipe(recipe_id=instance.id, **ri) for ri in new_ingredients_dict.values()
+        ])
+        IngredientInRecipe.objects.bulk_update([
+            IngredientInRecipe(id=old_ingredients_dict[ri['ingredient'].id].id, **ri) for ri in updated_ingredients_dict.values()
+        ], fields=['amount'])
 
     def update_many2us(self, instance, validated_data):
         for field, updater_name in self.MANY_FIELDS.items():
