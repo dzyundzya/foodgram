@@ -38,19 +38,19 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return FullRecipeSerializer
         return CreateRecipeSerializer
 
-    def perform_create(self, serializer):
-        self.object = serializer.save(author=self.request.user)
+    # def perform_create(self, serializer):
+    #     self.object = serializer.save(author=self.request.user)
 
-    def perform_update(self, serializer):
-        self.object = serializer.save()
+    # def perform_update(self, serializer):
+    #     self.object = serializer.save()
 
-    def create(self, request, *args, **kwargs):
-        super().create(request, *args, **kwargs)
-        return Response(FullRecipeSerializer(instance=self.object).data)
+    # def create(self, request, *args, **kwargs):
+    #     super().create(request, *args, **kwargs)
+    #     return Response(FullRecipeSerializer(instance=self.object).data)
 
-    def update(self, request, *args, **kwargs):
-        super().update(request, *args, **kwargs)
-        return Response(FullRecipeSerializer(instance=self.object).data)
+    # def update(self, request, *args, **kwargs):
+    #     super().update(request, *args, **kwargs)
+    #     return Response(FullRecipeSerializer(instance=self.object).data)
 
     @action(
         methods=['POST', 'DELETE'],
@@ -108,6 +108,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return Response(status=status.HTTP_204_NO_CONTENT)
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
+    @staticmethod
     def create_shopping_cart(ingredients):
         shopping_cart = 'Список покупок:'
         filename = 'shopping_cart.txt'

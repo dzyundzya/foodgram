@@ -100,7 +100,8 @@ class CreateRecipeSerializer(DefaultRecipeSerializer):
         many=True, required=True
     )
 
-    def ingredient_in_recipe(self, instance, ingredients):
+    @staticmethod
+    def ingredient_in_recipe(instance, ingredients):
         for ingredient in ingredients:
             IngredientInRecipe.objects.create(
                 recipe=instance,
@@ -125,3 +126,9 @@ class CreateRecipeSerializer(DefaultRecipeSerializer):
         self.ingredient_in_recipe(instance, ingredients)
         instance.save()
         return instance
+
+    def to_representation(self, instance):
+        serializer = FullRecipeSerializer(
+            instance, context={'request': self.context.get('request')}
+        )
+        return serializer.data
