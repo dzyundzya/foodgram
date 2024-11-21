@@ -100,7 +100,7 @@ class CreateRecipeSerializer(DefaultRecipeSerializer):
         many=True, required=True
     )
 
-    def ingredient_in_recipe(instance, ingredients):
+    def ingredient_in_recipe(self, instance, ingredients):
         for ingredient in ingredients:
             IngredientInRecipe.objects.create(
                 recipe=instance,
