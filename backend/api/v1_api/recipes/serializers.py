@@ -25,9 +25,7 @@ class BriefRecipeSerializer(serializers.ModelSerializer):
 
 class CreateIngredientInRecipeSerializer(serializers.ModelSerializer):
 
-    id = serializers.PrimaryKeyRelatedField(
-        queryset=Ingredient.objects.all()
-    )
+    id = serializers.IntegerField()
 
     class Meta:
         model = IngredientInRecipe
