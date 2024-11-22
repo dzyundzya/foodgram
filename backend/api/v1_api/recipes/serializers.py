@@ -105,7 +105,7 @@ class CreateRecipeSerializer(DefaultRecipeSerializer):
         for ingredient in ingredients:
             IngredientInRecipe.objects.create(
                 recipe=instance,
-                ingredient=ingredient['id'],
+                ingredient=Ingredient.objects.get(pk=ingredient['id']),
                 amount=ingredient['amount']
             )
 
