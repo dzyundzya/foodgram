@@ -26,7 +26,6 @@ class BriefRecipeSerializer(serializers.ModelSerializer):
 class CreateIngredientInRecipeSerializer(serializers.ModelSerializer):
 
     id = serializers.PrimaryKeyRelatedField(
-        source='ingredient',
         queryset=Ingredient.objects.all()
     )
 
@@ -104,7 +103,7 @@ class CreateRecipeSerializer(DefaultRecipeSerializer):
         IngredientInRecipe.objects.bulk_create(
             [IngredientInRecipe(
                 recipe=instance,
-                ingredient=ingredient['ingredient'],
+                ingredient=ingredient['id'],
                 amount=ingredient['amount']
             ) for ingredient in ingredients]
         )
