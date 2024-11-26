@@ -38,9 +38,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return FullRecipeSerializer
         return CreateRecipeSerializer
 
-    def perform_create(self, serializer):
-        self.object = serializer.save(author=self.request.user)
-
     @action(
         methods=['POST', 'DELETE'],
         detail=True,
@@ -103,8 +100,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
         filename = 'shopping_cart.txt'
         for ingredient in ingredients:
             shopping_cart += (
-                f'\n{ingredient["ingredient__name"]} '
-                f'{ingredient["amount"]} - '
+                f'\n{ingredient["ingredient__name"]} - '
+                f'{ingredient["amount"]}'
                 f'({ingredient["ingredient__measurement_unit"]})'
             )
         response = HttpResponse(
