@@ -26,6 +26,7 @@ class BriefRecipeSerializer(serializers.ModelSerializer):
 class CreateIngredientInRecipeSerializer(serializers.ModelSerializer):
 
     id = serializers.PrimaryKeyRelatedField(
+        source='ingredient',
         queryset=Ingredient.objects.all()
     )
 
@@ -96,18 +97,17 @@ class CreateRecipeSerializer(DefaultRecipeSerializer):
     tags = serializers.PrimaryKeyRelatedField(
         queryset=Tag.objects.all(), many=True
     )
-    ingredients = CreateIngredientInRecipeSerializer(
-        many=True, required=True
-    )
+    ingredients = CreateIngredientInRecipeSerializer(many=True)
 
     @staticmethod
     def ingredient_in_recipe(instance, ingredients):
-        for ingredient in ingredients:
-            IngredientInRecipe.objects.create(
+        IngredientInRecipe.objects.bulk_create(
+            [IngredientInRecipe(
                 recipe=instance,
-                ingredient=ingredient['id'],
+                ingredient=ingredient['ingredient'],
                 amount=ingredient['amount']
-            )
+            ) for ingredient in ingredients]
+        )
 
     def create(self, validated_data):
         ingredients = validated_data.pop('ingredients')
@@ -118,8 +118,8 @@ class CreateRecipeSerializer(DefaultRecipeSerializer):
         return instance
 
     def update(self, instance, validated_data):
-        ingredients = validated_data.pop('ingredients', None)
-        tags = validated_data.pop('tags', None)
+        ingredients = validated_data.pop('ingredients')
+        tags = validated_data.pop('tags')
         instance = super().update(instance, validated_data)
         instance.ingredients.clear()
         instance.tags.set(tags)
