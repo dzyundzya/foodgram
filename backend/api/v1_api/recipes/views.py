@@ -6,6 +6,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from api.v1_api.permission import AdminOrReadOnly, AuthorOrAdminOrReadOnly
+from .filters import RecipeFilter
 from .serializers import (
     BriefRecipeSerializer, CreateRecipeSerializer,
     FullRecipeSerializer, IngredientSerializer
@@ -31,7 +32,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     permission_classes = (AuthorOrAdminOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
-    filterset_fields = ('tags',)
+    filterset_class = RecipeFilter
 
     def get_serializer_class(self):
         if self.action in ('list', 'retrieve'):
@@ -84,7 +85,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 recipe=Recipe.objects.get(id=pk), user=request.user
             )
             serializer = BriefRecipeSerializer(
-                Recipe.objects.get(id=pk)
+                Recipe.objects.get(id=pk).
             )
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         if request.method == 'DELETE':
