@@ -96,7 +96,9 @@ class CreateRecipeSerializer(DefaultRecipeSerializer):
     tags = serializers.PrimaryKeyRelatedField(
         queryset=Tag.objects.all(), many=True
     )
-    ingredients = CreateIngredientInRecipeSerializer(many=True)
+    ingredients = CreateIngredientInRecipeSerializer(
+        write_only=True, many=True
+    )
 
     @staticmethod
     def ingredient_in_recipe(instance, ingredients):
