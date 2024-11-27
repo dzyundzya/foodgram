@@ -85,7 +85,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 recipe=Recipe.objects.get(id=pk), user=request.user
             )
             serializer = BriefRecipeSerializer(
-                Recipe.objects.get(id=pk).
+                Recipe.objects.get(id=pk)
             )
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         if request.method == 'DELETE':
