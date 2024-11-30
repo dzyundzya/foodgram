@@ -1,9 +1,13 @@
+from django.core.exceptions import ValidationError
 from django.db.models import Sum
 from django.http.response import HttpResponse
+from django.shortcuts import redirect
+from django.views.decorators.http import require_GET
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, status, permissions, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.reverse import reverse
 
 from api.v1_api.permission import AdminOrReadOnly, AuthorOrAdminOrReadOnly
 from .filters import RecipeFilter
@@ -11,7 +15,6 @@ from .serializers import (
     BriefRecipeSerializer, CreateRecipeSerializer,
     FullRecipeSerializer, IngredientSerializer
 )
-
 from favorite.models import Favorite
 from recipes.models import Ingredient, IngredientInRecipe, Recipe
 from shopping_cart.models import ShoppingCart
@@ -128,8 +131,18 @@ class RecipeViewSet(viewsets.ModelViewSet):
         url_path='get-link'
     )
     def get_link(self, request, pk=None):
-        recipe_id = self.kwargs[self.lookup_field]
-        frontend_url = 'https://fg'
-        url_to_recipes = 'recipessss'
-        short_link = f'{frontend_url}/{url_to_recipes}/{recipe_id}/'
-        return Response({"short-link": short_link})
+        recipe = Recipe.objects.get(pk=pk)
+        short_link = reverse('short_url', kwargs={'pk': recipe.pk})
+        return Response(
+            {"short-link": request.build_absolute_uri(short_link)},
+            status=status.HTTP_200_OK
+        )
+
+
+@require_GET
+def short_url(request, pk):
+    try:
+        Recipe.objects.filter(pk=pk).exists()
+        return redirect(f'/recipes/{pk}/')
+    except Exception as e:
+        raise ValidationError(e)
