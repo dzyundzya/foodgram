@@ -1,4 +1,3 @@
-from django.db.models import Count
 from rest_framework import serializers
 
 from api.v1_api.recipes.serializers import BriefRecipeSerializer
