@@ -1,7 +1,7 @@
 from django.core.exceptions import ValidationError
 from django.db.models import Sum
 from django.http.response import HttpResponse
-from django.shortcuts import redirect
+from django.shortcuts import get_object_or_404, redirect
 from django.views.decorators.http import require_GET
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, status, permissions, viewsets
@@ -9,12 +9,17 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
 
-from api.v1_api.permission import AdminOrReadOnly, AuthorOrAdminOrReadOnly
 from .filters import RecipeFilter
 from .serializers import (
     BriefRecipeSerializer, CreateRecipeSerializer,
     FullRecipeSerializer, IngredientSerializer
 )
+from utils import (
+    delete_favorite_shopping_cart,
+    post_favorite_shopping_cart,
+    create_shopping_cart
+)
+from api.v1_api.permission import AdminOrReadOnly, AuthorOrAdminOrReadOnly
 from favorite.models import Favorite
 from recipes.models import Ingredient, IngredientInRecipe, Recipe
 from shopping_cart.models import ShoppingCart
@@ -32,7 +37,11 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
 
 class RecipeViewSet(viewsets.ModelViewSet):
 
-    queryset = Recipe.objects.all()
+    queryset = Recipe.objects.all().select_related(
+        'author'
+    ).prefetch_related(
+        'tags', 'ingredients'
+    )
     permission_classes = (AuthorOrAdminOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
@@ -49,26 +58,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
     )
     def shopping_cart(self, request, pk):
         if request.method == 'POST':
-            if ShoppingCart.objects.filter(
-                user=request.user, recipe__id=pk
-            ).exists():
-                return Response(
-                    {'errors': 'Вы уже добавили этот рецепт!'},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-            ShoppingCart.objects.create(
-                recipe=Recipe.objects.get(id=pk), user=request.user
+            return post_favorite_shopping_cart(
+                request, pk, ShoppingCart, BriefRecipeSerializer
             )
-            serializer = BriefRecipeSerializer(
-                Recipe.objects.get(id=pk)
-            )
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        if request.method == 'DELETE':
-            cart = ShoppingCart.objects.filter(
-                recipe__id=pk, user=request.user)
-            cart.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        return Response(status=status.HTTP_400_BAD_REQUEST)
+        return delete_favorite_shopping_cart(request, pk, ShoppingCart)
 
     @action(
         methods=['POST', 'DELETE'],
@@ -77,42 +70,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
     )
     def favorite(self, request, pk):
         if request.method == 'POST':
-            if Favorite.objects.filter(
-                user=request.user, recipe__id=pk
-            ).exists():
-                return Response(
-                    {'errors': 'Вы уже добавили этот рецепт!'},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-            Favorite.objects.create(
-                recipe=Recipe.objects.get(id=pk), user=request.user
+            return post_favorite_shopping_cart(
+                request, pk, Favorite, BriefRecipeSerializer
             )
-            serializer = BriefRecipeSerializer(
-                Recipe.objects.get(id=pk)
-            )
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        if request.method == 'DELETE':
-            favorite = Favorite.objects.filter(
-                recipe__id=pk, user=request.user)
-            favorite.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        return Response(status=status.HTTP_400_BAD_REQUEST)
-
-    @staticmethod
-    def create_shopping_cart(ingredients):
-        shopping_cart = 'Список покупок:'
-        filename = 'shopping_cart.txt'
-        for ingredient in ingredients:
-            shopping_cart += (
-                f'\n{ingredient["ingredient__name"]} - '
-                f'{ingredient["amount"]}'
-                f'({ingredient["ingredient__measurement_unit"]})'
-            )
-        response = HttpResponse(
-            shopping_cart, content_type='text.txt; charset=utf-8'
-        )
-        response['Content-Desposition'] = f'attachment; filename={filename}'
-        return response
+        return delete_favorite_shopping_cart(request, pk, Favorite)
 
     @action(
         detail=False,
@@ -124,25 +85,27 @@ class RecipeViewSet(viewsets.ModelViewSet):
         ).order_by('ingredient__name').values(
             'ingredient__name', 'ingredient__measurement_unit'
         ).annotate(amount=Sum('amount'))
-        return self.create_shopping_cart(ingredients)
+        shopping_cart = create_shopping_cart(ingredients)
+        filename = 'shopping_cart.txt'
+        response = HttpResponse(
+            shopping_cart, content_type='text.txt; charset=utf-8'
+        )
+        response['Content-Desposition'] = f'attachment; filename={filename}'
+        return response
 
     @action(
         detail=True,
         url_path='get-link'
     )
     def get_link(self, request, pk=None):
-        recipe = Recipe.objects.get(pk=pk)
+        recipe = get_object_or_404(Recipe, pk=pk)
         short_link = reverse('short_url', kwargs={'pk': recipe.pk})
         return Response(
-            {"short-link": request.build_absolute_uri(short_link)},
+            {'short-link': request.build_absolute_uri(short_link)},
             status=status.HTTP_200_OK
         )
 
 
 @require_GET
 def short_url(request, pk):
-    try:
-        Recipe.objects.filter(pk=pk).exists()
-        return redirect(f'/recipes/{pk}/')
-    except Exception as e:
-        raise ValidationError(e)
+    return redirect(f'/recipes/{pk}/')

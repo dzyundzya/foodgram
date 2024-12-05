@@ -1,5 +1,5 @@
 from django.contrib.auth import get_user_model
-from django.core.validators import MinValueValidator
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
 from recipes import constants
@@ -39,8 +39,9 @@ class Recipe(models.Model):
     )
     cooking_time = models.PositiveSmallIntegerField(
         'Время приготовления',
-        validators=(MinValueValidator(
-            constants.MIN_COOKING_TIME, message='Минимум одна!'),
+        validators=(
+            MinValueValidator(constants.MIN_COOKING_TIME, message='Минимум одна!'),
+            MaxValueValidator(constants.MAX_COOKING_TIME, message='Максимум шестьсот'),
         ),
         help_text=constants.HELP_TEXT_COOKING_TIME,
     )
@@ -49,7 +50,6 @@ class Recipe(models.Model):
     class Meta:
         verbose_name = 'рецепт'
         verbose_name_plural = 'Рецепты'
-        db_table = 'Recipe'
         ordering = ('-created_at',)
 
     def __str__(self):
@@ -71,7 +71,6 @@ class Ingredient(models.Model):
     class Meta:
         verbose_name = 'ингредиент'
         verbose_name_plural = 'Ингредиенты'
-        db_table = 'Ingredient'
         ordering = ('name',)
         constraints = [
             models.UniqueConstraint(
@@ -100,15 +99,15 @@ class IngredientInRecipe(models.Model):
     )
     amount = models.PositiveSmallIntegerField(
         'Количество',
-        validators=(MinValueValidator(
-            constants.MIN_AMOUNT, message='Минимум один!'),
+        validators=(
+            MinValueValidator(constants.MIN_AMOUNT, message='Минимум один!'),
+            MaxValueValidator(constants.MAX_AMOUNT, message='Максимум десять тысяч'),
         ),
     )
 
     class Meta:
         verbose_name = 'ингредиент рецепта'
         verbose_name_plural = 'Ингредиенты рецепта'
-        db_table = 'IngredientInRecipe'
         constraints = [
             models.UniqueConstraint(
                 fields=['recipe', 'ingredient'],

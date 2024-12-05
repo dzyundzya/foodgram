@@ -25,6 +25,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework.authtoken',
+    'debug_toolbar',
+    'djoser',
+    'django_filters',
     'api.apps.ApiConfig',
     'favorite.apps.FavoriteConfig',
     'recipes.apps.RecipesConfig',
@@ -32,9 +35,6 @@ INSTALLED_APPS = [
     'subscribe.apps.SubscribeConfig',
     'tags.apps.TagsConfig',
     'users.apps.UsersConfig',
-    'debug_toolbar',
-    'djoser',
-    'django_filters',
 ]
 
 MIDDLEWARE = [
@@ -79,14 +79,6 @@ DATABASES = {
         'PORT': os.getenv('DB_PORT', 5432)
     }
 }
-
-
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
 
 
 AUTH_PASSWORD_VALIDATORS = [

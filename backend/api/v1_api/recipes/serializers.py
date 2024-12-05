@@ -101,7 +101,7 @@ class CreateRecipeSerializer(DefaultRecipeSerializer):
     )
 
     @staticmethod
-    def ingredient_in_recipe(instance, ingredients):
+    def create_ingredient_in_recipe(instance, ingredients):
         IngredientInRecipe.objects.bulk_create(
             [IngredientInRecipe(
                 recipe=instance,
@@ -116,15 +116,13 @@ class CreateRecipeSerializer(DefaultRecipeSerializer):
         user = self.context.get('request').user
         instance = Recipe.objects.create(**validated_data, author=user)
         instance.tags.set(tags)
-        self.ingredient_in_recipe(instance, ingredients)
+        self.create_ingredient_in_recipe(instance, ingredients)
         return instance
 
     def update(self, instance, validated_data):
         ingredients = validated_data.pop('ingredients')
         tags = validated_data.pop('tags')
-        instance = super().update(instance, validated_data)
         instance.ingredients.clear()
         instance.tags.set(tags)
-        self.ingredient_in_recipe(instance, ingredients)
-        instance.save()
-        return instance
+        self.create_ingredient_in_recipe(instance, ingredients)
+        return super().update(instance, validated_data)

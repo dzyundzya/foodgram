@@ -21,7 +21,6 @@ class Tag(models.Model):
     class Meta:
         verbose_name = 'тег'
         verbose_name_plural = 'Теги'
-        db_table = 'Tags'
         ordering = ('name',)
         constraints = [
             models.UniqueConstraint(

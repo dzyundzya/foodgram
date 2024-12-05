@@ -3,6 +3,7 @@ from django.contrib import admin
 from .models import Ingredient, IngredientInRecipe, Recipe
 
 
+@admin.register(Ingredient)
 class IngredientAdmin(admin.ModelAdmin):
     list_display = (
         'name',
@@ -13,6 +14,7 @@ class IngredientAdmin(admin.ModelAdmin):
     )
 
 
+@admin.register(Recipe)
 class RecipeAdmin(admin.ModelAdmin):
     list_display = (
         'name',
@@ -29,14 +31,10 @@ class RecipeAdmin(admin.ModelAdmin):
     )
 
 
+@admin.register(IngredientInRecipe)
 class IngredientInRecipeAdmin(admin.ModelAdmin):
     list_display = (
         'recipe',
         'ingredient',
         'amount',
     )
-
-
-admin.site.register(Ingredient, IngredientAdmin)
-admin.site.register(Recipe, RecipeAdmin)
-admin.site.register(IngredientInRecipe, IngredientInRecipeAdmin)

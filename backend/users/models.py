@@ -28,11 +28,6 @@ class User(AbstractUser):
         max_length=constants.MAX_LENGTH_NAME,
         help_text=constants.HELP_TEXT_NAME,
     )
-    password = models.CharField(
-        'Пароль',
-        max_length=constants.MAX_LENGTH_PASSWORD,
-        help_text=constants.HELP_TEXT_PASSWORD,
-    )
     avatar = models.ImageField(
         'Аватар пользователя',
         upload_to='images_avatar/',

@@ -1,3 +1,4 @@
+from django.db.models import Count
 from rest_framework import serializers
 
 from api.v1_api.recipes.serializers import BriefRecipeSerializer
@@ -48,4 +49,4 @@ class SubscriptionsSerializer(serializers.ModelSerializer):
         return BriefRecipeSerializer(recipes, many=True).data
 
     def get_recipes_count(self, obj):
-        return Recipe.objects.filter(author=obj.author).count()
+        return obj.following.recipes.count()
