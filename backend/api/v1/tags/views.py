@@ -1,6 +1,6 @@
 from rest_framework import viewsets
 
-from api.v1_api.permission import AdminOrReadOnly
+from api.v1.permission import AdminOrReadOnly
 from .serializers import TagSerializer
 from tags.models import Tag
 

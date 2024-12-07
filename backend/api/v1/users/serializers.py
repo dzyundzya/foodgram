@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from djoser.serializers import UserSerializer
 from rest_framework import serializers
 
-from api.v1_api.fields import Base64ImageField
+from api.v1.fields import Base64ImageField
 from subscribe.models import Subscribe
 
 User = get_user_model()

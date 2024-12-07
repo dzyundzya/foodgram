@@ -4,11 +4,11 @@ from rest_framework import permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from api.v1_api.permission import AuthorOrAdminOrReadOnly
-from api.v1_api.subscribe.serializers import (
+from api.v1.permission import AuthorOrAdminOrReadOnly
+from api.v1.subscribe.serializers import (
     SubscriberSerializer, SubscriptionsSerializer
 )
-from api.v1_api.users.serializers import (
+from api.v1.users.serializers import (
     AvatarSerializer, DjoserUserSerializer
 )
 from subscribe.models import Subscribe

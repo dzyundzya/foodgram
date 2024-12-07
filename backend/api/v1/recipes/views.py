@@ -3,22 +3,22 @@ from django.http.response import HttpResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.views.decorators.http import require_GET
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters, status, permissions, viewsets
+from rest_framework import filters, permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
 
 from .filters import RecipeFilter
 from .serializers import (
-    BriefRecipeSerializer, CreateRecipeSerializer,
-    FullRecipeSerializer, IngredientSerializer
+    CreateRecipeSerializer, FavoriteSerializer, FullRecipeSerializer,
+    IngredientSerializer, ShoppingCartSerializer
 )
-from utils import (
+from .utils import (
+    create_shopping_cart,
     delete_favorite_shopping_cart,
-    post_favorite_shopping_cart,
-    create_shopping_cart
+    post_favorite_shopping_cart
 )
-from api.v1_api.permission import AdminOrReadOnly, AuthorOrAdminOrReadOnly
+from api.v1.permission import AdminOrReadOnly, AuthorOrAdminOrReadOnly
 from favorite.models import Favorite
 from recipes.models import Ingredient, IngredientInRecipe, Recipe
 from shopping_cart.models import ShoppingCart
@@ -36,7 +36,7 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
 
 class RecipeViewSet(viewsets.ModelViewSet):
 
-    queryset = Recipe.objects.all().select_related(
+    queryset = Recipe.objects.select_related(
         'author'
     ).prefetch_related(
         'tags', 'ingredients'
@@ -58,7 +58,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def shopping_cart(self, request, pk):
         if request.method == 'POST':
             return post_favorite_shopping_cart(
-                request, pk, ShoppingCart, BriefRecipeSerializer
+                request, pk, ShoppingCartSerializer
             )
         return delete_favorite_shopping_cart(request, pk, ShoppingCart)
 
@@ -70,7 +70,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def favorite(self, request, pk):
         if request.method == 'POST':
             return post_favorite_shopping_cart(
-                request, pk, Favorite, BriefRecipeSerializer
+                request, pk, FavoriteSerializer
             )
         return delete_favorite_shopping_cart(request, pk, Favorite)
 

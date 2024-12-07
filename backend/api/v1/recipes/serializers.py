@@ -1,9 +1,11 @@
 from rest_framework import serializers
 
-from api.v1_api.fields import Base64ImageField
-from api.v1_api.tags.serializers import TagSerializer
-from api.v1_api.users.serializers import DjoserUserSerializer
+from api.v1.fields import Base64ImageField
+from api.v1.tags.serializers import TagSerializer
+from api.v1.users.serializers import DjoserUserSerializer
+from favorite.models import Favorite
 from recipes.models import Ingredient, IngredientInRecipe, Recipe
+from shopping_cart.models import ShoppingCart
 from tags.models import Tag
 
 
@@ -126,3 +128,38 @@ class CreateRecipeSerializer(DefaultRecipeSerializer):
         instance.tags.set(tags)
         self.create_ingredient_in_recipe(instance, ingredients)
         return super().update(instance, validated_data)
+
+
+class ShoppingCartSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = ShoppingCart
+        fields = ('user', 'recipe')
+
+    def validate(self, data):
+        user = data['user']
+        if user.shopping_cart.filter(recipe=data['recipe']).exists():
+            raise serializers.ValidationError(
+                'Вы уже добавили рецепт в корзину!'
+            )
+        return data
+
+    def to_representation(self, instance):
+        return BriefRecipeSerializer(
+            instance.recipe,
+            context={'request': self.context.get('request')}
+        ).data
+
+
+class FavoriteSerializer(ShoppingCartSerializer):
+
+    class Meta(ShoppingCartSerializer.Meta):
+        model = Favorite
+
+    def validate(self, data):
+        user = data['user']
+        if user.favorites.filter(recipe=data['recipe']).exists():
+            raise serializers.ValidationError(
+                'Вы уже добавили рецепт в избранное!'
+            )
+        return data

@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
-from api.v1_api.recipes.serializers import BriefRecipeSerializer
-from api.v1_api.fields import Base64ImageField
+from api.v1.recipes.serializers import BriefRecipeSerializer
+from api.v1.fields import Base64ImageField
 from recipes.models import Recipe
 from subscribe.models import Subscribe
 
@@ -22,7 +22,8 @@ class SubscriptionsSerializer(serializers.ModelSerializer):
     last_name = serializers.ReadOnlyField(source='author.last_name')
     is_subscribed = serializers.SerializerMethodField()
     recipes = serializers.SerializerMethodField()
-    recipes_count = serializers.SerializerMethodField()
+    recipes_count = serializers.IntegerField(
+        source='author.recipes.count', read_only=True)
     avatar = Base64ImageField(source='author.avatar')
 
     class Meta:
@@ -46,6 +47,3 @@ class SubscriptionsSerializer(serializers.ModelSerializer):
     def get_recipes(self, obj):
         recipes = Recipe.objects.filter(author=obj.author)
         return BriefRecipeSerializer(recipes, many=True).data
-
-    def get_recipes_count(self, obj):
-        return obj.following.recipes.count()
