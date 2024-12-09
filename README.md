@@ -55,6 +55,7 @@ python manage.py runserver
 Учетная запись администратора:
 - почта: yo@yo.yo
 - пароль: yo
+ip и домен сайта:
 - 130.193.42.2, dzyundzya-foodgram.ddns.net
 ---
 ## 3. Техническая информация 
