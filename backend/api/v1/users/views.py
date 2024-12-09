@@ -63,7 +63,9 @@ class DjoserUserViewSet(UserViewSet):
                     {'errors': 'Вы не можете подписаться на самого себя!'},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
-            if Subscribe.objects.filter(user=request.user, author=author).exists():
+            if Subscribe.objects.filter(
+                user=request.user, author=author
+            ).exists():
                 return Response(
                     {'errors': f'Вы уже подписаны на {author}'},
                     status=status.HTTP_400_BAD_REQUEST,
@@ -72,7 +74,9 @@ class DjoserUserViewSet(UserViewSet):
                 'user': request.user.id,
                 'author': author.id,
             }
-            serializer = SubscriberSerializer(data=data, context={'request': request})
+            serializer = SubscriberSerializer(
+                data=data, context={'request': request}
+            )
             serializer.is_valid(raise_exception=True)
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -88,7 +92,9 @@ class DjoserUserViewSet(UserViewSet):
     )
     def subscriptions(self, request):
         user = request.user
-        quaryset = user.follower.annotate(recipes_count=Count('author__recipes'))
+        quaryset = user.follower.annotate(
+            recipes_count=Count('author__recipes')
+        )
         serializer = SubscriptionsSerializer(
             self.paginate_queryset(quaryset),
             many=True,
