@@ -56,7 +56,11 @@ python manage.py runserver
 - почта: yo@yo.yo
 - пароль: yo
 ip и домен сайта:
+<<<<<<< HEAD
 - 130.193.42.2, dzyundzya-foodgram.ddns.net
+=======
+- 130.193.42.2, https://dzyundzya-foodgram.ddns.net/
+>>>>>>> 6bd2fbebd06472e73cd4d377cebb3fab9b24a1b6
 ---
 ## 3. Техническая информация 
 
