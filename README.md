@@ -56,7 +56,7 @@ python manage.py runserver
 - почта: yo@yo.yo
 - пароль: yo
   
-- 130.193.42.2, dzyundzya-foodgram.ddns.net
+- 130.193.42.2, https://dzyundzya-foodgram.ddns.net/
 ---
 ## 3. Техническая информация 
 
