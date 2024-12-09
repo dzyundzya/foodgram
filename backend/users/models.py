@@ -1,4 +1,5 @@
 from django.contrib.auth.models import AbstractUser
+from django.core.validators import RegexValidator
 from django.db import models
 
 from users import constants
@@ -11,6 +12,10 @@ class User(AbstractUser):
         max_length=constants.MAX_LENGTH_NAME,
         unique=True,
         help_text=constants.HELP_TEXT_NAME,
+        validators=[RegexValidator(
+            regex=r'^[\w.@+-]+$',
+            message='Никнейм не должен содержать данные символы - [w.@+-]+$'
+        )]
     )
     email = models.EmailField(
         'email',

@@ -1,6 +1,6 @@
 from django_filters import FilterSet, filters
 
-from recipes.models import Recipe
+from recipes.models import Ingredient, Recipe
 from tags.models import Tag
 
 
@@ -33,3 +33,11 @@ class RecipeFilter(FilterSet):
         if self.request.user.is_authenticated and value:
             return queryset.filter(favorites__user=user)
         return queryset
+
+
+class IngredientFilter(FilterSet):
+    name = filters.CharFilter(field_name='name')
+
+    class Meta:
+        model = Ingredient
+        fields = ('name',)

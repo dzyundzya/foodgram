@@ -18,15 +18,16 @@ def post_favorite_shopping_cart(request, pk, serializers):
 
 
 def delete_favorite_shopping_cart(request, pk, models):
-    recipe = get_object_or_404(Recipe, pk=pk)
     favorite_shopping_cart = models.objects.filter(
-        recipe=recipe, user=request.user
+        recipe_id=pk, user=request.user
     )
     if favorite_shopping_cart:
         favorite_shopping_cart.delete()
-        return Response(f'{recipe.name} - удален!')
+        return Response(
+            'Рецепт удален!', status=status.HTTP_204_NO_CONTENT
+        )
     return Response(
-        {'errors': f'{recipe.name} - нет в избранном/корзине!'},
+        {'errors': 'Данного рецепта нет в избранном/корзине!'},
         status=status.HTTP_400_BAD_REQUEST
     )
 
@@ -39,3 +40,4 @@ def create_shopping_cart(ingredients):
             f'{ingredient["amount"]}'
             f'({ingredient["ingredient__measurement_unit"]})'
         )
+    return shopping_cart

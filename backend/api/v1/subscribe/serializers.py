@@ -6,13 +6,6 @@ from recipes.models import Recipe
 from subscribe.models import Subscribe
 
 
-class SubscriberSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Subscribe
-        fields = ('id', 'author', 'user')
-
-
 class SubscriptionsSerializer(serializers.ModelSerializer):
 
     id = serializers.ReadOnlyField(source='author.id')
@@ -22,8 +15,7 @@ class SubscriptionsSerializer(serializers.ModelSerializer):
     last_name = serializers.ReadOnlyField(source='author.last_name')
     is_subscribed = serializers.SerializerMethodField()
     recipes = serializers.SerializerMethodField()
-    recipes_count = serializers.IntegerField(
-        source='author.recipes.count', read_only=True)
+    recipes_count = serializers.IntegerField(read_only=True)
     avatar = Base64ImageField(source='author.avatar')
 
     class Meta:
@@ -47,3 +39,13 @@ class SubscriptionsSerializer(serializers.ModelSerializer):
     def get_recipes(self, obj):
         recipes = Recipe.objects.filter(author=obj.author)
         return BriefRecipeSerializer(recipes, many=True).data
+
+
+class SubscriberSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Subscribe
+        fields = ('author', 'user')
+
+    def to_representation(self, instance):
+        return SubscriptionsSerializer(instance, context=self.context).data

@@ -3,22 +3,22 @@ from django.http.response import HttpResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.views.decorators.http import require_GET
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters, permissions, status, viewsets
+from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
 
-from .filters import RecipeFilter
-from .serializers import (
+from api.v1.permission import AdminOrReadOnly, AuthorOrAdminOrReadOnly
+from api.v1.recipes.filters import IngredientFilter, RecipeFilter
+from api.v1.recipes.serializers import (
     CreateRecipeSerializer, FavoriteSerializer, FullRecipeSerializer,
     IngredientSerializer, ShoppingCartSerializer
 )
-from .utils import (
+from api.v1.recipes.utils import (
     create_shopping_cart,
     delete_favorite_shopping_cart,
     post_favorite_shopping_cart
 )
-from api.v1.permission import AdminOrReadOnly, AuthorOrAdminOrReadOnly
 from favorite.models import Favorite
 from recipes.models import Ingredient, IngredientInRecipe, Recipe
 from shopping_cart.models import ShoppingCart
@@ -30,7 +30,8 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = IngredientSerializer
     permission_classes = (AdminOrReadOnly,)
     pagination_class = None
-    filter_backends = (filters.SearchFilter,)
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = IngredientFilter
     search_fields = ('^name',)
 
 
