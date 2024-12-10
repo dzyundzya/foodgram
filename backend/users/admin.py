@@ -12,7 +12,9 @@ class UserAdmin(BaseUserAdmin):
         'first_name',
         'last_name',
     )
-    list_filter = (
-        'email',
+    search_fields = (
         'username',
+        'email',
+        'first_name',
+        'last_name',
     )

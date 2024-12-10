@@ -81,7 +81,7 @@ class DjoserUserViewSet(UserViewSet):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         subscribe = Subscribe.objects.filter(
-            author_id=id, user=request.user
+            author_id=id, user_id=request.user.id
         )
         subscribe.delete()
         return Response('Подписка удалена!', status=status.HTTP_204_NO_CONTENT)

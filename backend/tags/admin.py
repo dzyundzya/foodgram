@@ -9,3 +9,7 @@ class TagAdmin(admin.ModelAdmin):
         'name',
         'slug',
     )
+    search_fields = (
+        'name',
+        'slug'
+    )

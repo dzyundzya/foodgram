@@ -19,7 +19,7 @@ def post_favorite_shopping_cart(request, pk, serializers):
 
 def delete_favorite_shopping_cart(request, pk, models):
     favorite_shopping_cart = models.objects.filter(
-        recipe_id=pk, user=request.user
+        recipe_id=pk, user_id=request.user.id
     )
     if favorite_shopping_cart:
         favorite_shopping_cart.delete()

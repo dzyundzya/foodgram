@@ -28,6 +28,7 @@ INSTALLED_APPS = [
     'debug_toolbar',
     'djoser',
     'django_filters',
+    'djaa_list_filter',
     'api.apps.ApiConfig',
     'favorite.apps.FavoriteConfig',
     'recipes.apps.RecipesConfig',
@@ -69,14 +70,22 @@ TEMPLATES = [
 WSGI_APPLICATION = 'foodgram_backend.wsgi.application'
 
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': os.getenv('POSTGRES_DB', 'project18'),
+#         'USER': os.getenv('POSTGRES_USER', 'project18'),
+#         'PASSWORD': os.getenv('POSTGRES_PASSWORD', ''),
+#         'HOST': os.getenv('DB_HOST', ''),
+#         'PORT': os.getenv('DB_PORT', 5432)
+#     }
+# }
+
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('POSTGRES_DB', 'project18'),
-        'USER': os.getenv('POSTGRES_USER', 'project18'),
-        'PASSWORD': os.getenv('POSTGRES_PASSWORD', ''),
-        'HOST': os.getenv('DB_HOST', ''),
-        'PORT': os.getenv('DB_PORT', 5432)
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
 

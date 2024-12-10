@@ -6,3 +6,4 @@ djoser
 psycopg2-binary==2.9.3
 python-dotenv==1.0.1 
 django-filter==23.1
+django-admin-autocomplete-list-filter

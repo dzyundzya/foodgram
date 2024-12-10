@@ -1,4 +1,5 @@
 from django_filters import FilterSet, filters
+from rest_framework.filters import SearchFilter
 
 from recipes.models import Ingredient, Recipe
 from tags.models import Tag
@@ -35,9 +36,6 @@ class RecipeFilter(FilterSet):
         return queryset
 
 
-class IngredientFilter(FilterSet):
-    name = filters.CharFilter(field_name='name')
-
-    class Meta:
-        model = Ingredient
-        fields = ('name',)
+class IngredientFilter(SearchFilter):
+    
+    search_param = 'name'
