@@ -82,8 +82,12 @@ class DjoserUserViewSet(UserViewSet):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         subscribe = Subscribe.objects.filter(
             author_id=id, user_id=request.user.id
-        )
-        subscribe.delete()
+        ).delete()
+        if subscribe[0] == 0:
+            return Response(
+                {'errors': 'Вы не подписаны на данного пользователя'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
         return Response('Подписка удалена!', status=status.HTTP_204_NO_CONTENT)
 
     @action(

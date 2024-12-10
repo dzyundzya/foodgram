@@ -20,15 +20,14 @@ def post_favorite_shopping_cart(request, pk, serializers):
 def delete_favorite_shopping_cart(request, pk, models):
     favorite_shopping_cart = models.objects.filter(
         recipe_id=pk, user_id=request.user.id
-    )
-    if favorite_shopping_cart:
-        favorite_shopping_cart.delete()
+    ).delete()
+    if favorite_shopping_cart[0] == 0:
         return Response(
-            'Рецепт удален!', status=status.HTTP_204_NO_CONTENT
+            {'errors': 'Данного рецепта нет в избранном/корзине!'},
+            status=status.HTTP_400_BAD_REQUEST
         )
     return Response(
-        {'errors': 'Данного рецепта нет в избранном/корзине!'},
-        status=status.HTTP_400_BAD_REQUEST
+        'Рецепт удален!', status=status.HTTP_204_NO_CONTENT
     )
 
 
