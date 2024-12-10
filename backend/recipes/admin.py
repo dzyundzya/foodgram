@@ -1,8 +1,5 @@
-from typing import Any
 from djaa_list_filter.admin import AjaxAutocompleteListFilterModelAdmin
 from django.contrib import admin
-from django.db.models.query import QuerySet
-from django.http import HttpRequest
 
 
 from .models import Ingredient, IngredientInRecipe, Recipe
