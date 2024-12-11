@@ -12,6 +12,10 @@ class UserAdmin(BaseUserAdmin):
         'first_name',
         'last_name',
     )
+    filter_fields = (
+        'is_active',
+        'is_superuser',
+    )
     search_fields = (
         'username',
         'email',

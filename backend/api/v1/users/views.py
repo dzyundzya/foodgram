@@ -80,10 +80,10 @@ class DjoserUserViewSet(UserViewSet):
             serializer.is_valid(raise_exception=True)
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        subscribe = Subscribe.objects.filter(
+        subscribe, _ = Subscribe.objects.filter(
             author_id=id, user_id=request.user.id
         ).delete()
-        if subscribe[0] == 0:
+        if subscribe == 0:
             return Response(
                 {'errors': 'Вы не подписаны на данного пользователя'},
                 status=status.HTTP_400_BAD_REQUEST
